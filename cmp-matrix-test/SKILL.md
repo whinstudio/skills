@@ -34,11 +34,15 @@ step 1 (`$CMP_BACKEND_DIR`):
     B=${CMP_BACKEND_DIR:?set CMP_BACKEND_DIR to your cmpose.dev backend checkout}
     node -e "console.table(require('$B/scripts/smoke/variants.js').map(v => ({ name: v.name, type: v.templateType, package: v.packageName, modules: (v.features || []).join(' '), featuresConfig: JSON.stringify(v.featuresConfig || 'showcase defaults') })))"
 
-Snapshot (room release): 9 variants — `Showcase`, `ShowcaseMod`, `BlankMin`, `BlankNet`,
-`BlankTheme`, `BlankLang`, `BlankFull`, `BlankPurchases` and `BlankAds` (the last two came with the
-monetization release, for the in-app purchases and ads flags; Room is on in `BlankFull`, `BlankAds` and
-`BlankPurchases`, which has it alone: no custom module, theming and multi-language off). A full run has
-140 checks, five of them `Room schema unchanged by the build` (both showcases and the three Room variants). The
+Snapshot (backend release): 10 variants — `Showcase`, `ShowcaseMod`, `BlankMin`, `BlankNet`,
+`BlankTheme`, `BlankLang`, `BlankFull`, `BlankPurchases`, `BlankAds` and `BlankBackend` (`BlankPurchases`
+and `BlankAds` came with the monetization release, for the in-app purchases and ads flags; Room is on in
+`BlankFull`, `BlankAds` and `BlankPurchases`, which has it alone: no custom module, theming and
+multi-language off; `BlankBackend` is the only variant with the backend, next to a custom module). A full
+run has 190 checks, five of them `Room schema unchanged by the build` (both showcases and the three Room
+variants). `BlankBackend` adds the server's tests (`:server:test`), a sign-in screen check without Firebase
+config files, the invite deep link (`invite/abc` instead of `settings`) and a local server run
+(`:server:runLocal`, `GET /health`, stop). The
 `--build-only` count was not re-measured for this release (69 at the monetization release, before Room);
 it holds the checks that do not need the emulator/simulator or a release run, one of them `release is minified (mapping.txt)`; one check asserts that the skill's `contractVersion` (read from `CMP_SKILLS_DIR`, default the sibling skills checkout) equals the backend's. On every variant with detekt the smoke runs detekt
 twice: with the project's own config, then with compass-kit's (`detekt (compass-kit rules)`, the
