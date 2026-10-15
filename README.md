@@ -23,6 +23,7 @@ with `/<skill-name>`.
 | [`cmp-code-rules`](./cmp-code-rules) | Rules for every Kotlin change in a generated project — layering, visibility, Multiplatform limits, Compose state, Koin annotations, resources, accessibility — plus a self-review checklist. |
 | [`cmp-testing`](./cmp-testing) | Add or fix unit tests for ViewModels, use cases, repositories and mappers, and repair a test gate that is red, counts zero tests or hangs. |
 | [`cmp-maestro`](./cmp-maestro) | Write or repair Maestro flows, including the walkthrough used to record the demo video on Android and iOS, and add the test tags they select by. |
+| [`cmp-backend`](./cmp-backend) | Add the app's own data to the server in projects generated with backend — a V2+ migration with `space_id`, the Exposed table, repository and routes behind `authenticate` and `requireRole`, the server test, the shared model, the client repository, ViewModel, screen and Maestro step. |
 | [`cmp-detekt`](./cmp-detekt) | Run detekt in projects that have the detekt gate, auto-correct formatting first, then fix the remaining findings at their cause without suppressions, baselines or config changes. |
 | [`cmp-verify`](./cmp-verify) | When to build, how to read gate output, and recipes for the common Kotlin Multiplatform, KSP, Koin and Compose resources failures. |
 | [`cmp-gates`](./cmp-gates) | Run the finish gates in a separate Sonnet subagent and get a short pass/fail report; fixes only mechanical failures with a written recipe and reports the rest. |
@@ -31,15 +32,15 @@ with `/<skill-name>`.
 | [`account-delegate`](./account-delegate) | Offer to hand a self-contained job to a second Claude Code account on the same machine (headless, live in a side cmux pane) and bring its report — or a worktree branch to merge — back to your main session. |
 
 **Models.** Skills that write application code (`cmp-code-rules`, `cmp-feature`,
-`cmp-design-to-code`) run on your session model. Mechanical skills run in their own subagent on
+`cmp-design-to-code`, `cmp-backend`) run on your session model. Mechanical skills run in their own subagent on
 Sonnet and return a short report (`cmp-gates`, `cmp-detekt`, `cmp-testing`, `cmp-maestro`);
 `cmp-commit`, `cmp-new-project` and `cmp-matrix-test` run on Sonnet. `scripts/check-skills.sh`
 enforces these rules.
 
 [`compass-kit`](./compass-kit) is not a skill but a kit that Compass installs into every project
 it generates. Its `kit.json` lists the skills it ships — `cmp-code-rules`, `cmp-feature`,
-`cmp-design-to-code`, `cmp-maestro`, `cmp-testing`, `cmp-verify`, `cmp-gates`, `cmp-commit` and, for
-projects with detekt, `cmp-detekt` — together with the finish gates those skills run.
+`cmp-design-to-code`, `cmp-maestro`, `cmp-testing`, `cmp-verify`, `cmp-gates`, `cmp-commit`, for
+projects with detekt `cmp-detekt` and, for projects with a backend (`server/`), `cmp-backend` — together with the finish gates those skills run.
 `cmp-matrix-test` also runs detekt with the kit's `detekt.yml`. See [compass-kit](#compass-kit) below for its contents.
 
 ## Install

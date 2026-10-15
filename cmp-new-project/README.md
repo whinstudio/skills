@@ -58,6 +58,23 @@ Examples:
 The last one switches to a **blank** project with networking + theming + two custom
 modules — taken from the request, so no extra questions are asked.
 
+### Backend (`backend`)
+
+Ask for it explicitly — a server, sign-in or sharing data between users (e.g. "blank
+proje, sunucu ve girişle", "a blank app with a backend and sharing"). It is blank-only and
+turns on `multiLang` and `network`. The project then has a Ktor server in `server/`,
+`core/api`, `core/auth` (Firebase sign-in: email, Google, Apple), `feature/account` and
+`feature/sharing` (spaces, members, invites as `<scheme>://invite/<token>`); `account` and
+`sharing` become reserved module names.
+
+After generation:
+
+1. Add your own Firebase config files (`androidApp/google-services.json`,
+   `iosApp/iosApp/GoogleService-Info.plist`). Never commit them.
+2. Start the local server: `./gradlew :server:runLocal` (embedded PostgreSQL kept in
+   `.local-server/`; `./gradlew :server:resetLocal` wipes it).
+3. Add the app's own data with the [`cmp-backend`](../cmp-backend) skill.
+
 ## Configuration — `defaults.json`
 
 | key | default | meaning |

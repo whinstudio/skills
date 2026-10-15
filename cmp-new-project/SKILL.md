@@ -77,6 +77,14 @@ there if needed, or overrides them up front in their request.
   of structured data; DataStore (`dataStore`) is for preferences.** `room` implies
   nothing and adds `core/room` plus, in blank, a `feature/notes` demo (so `notes` is a
   reserved module name; see `reference/payload.md` → *Room*).
+  **Turn on `backend` only when the user explicitly asks for a server / backend, sign-in
+  (accounts) or sharing data between users** (`keywordMap.backend`); an app that only
+  shows accounts or a share button for plain text does not need it; if unsure, leave it
+  off and ask on the confirmation screen. `backend` is blank-only (it switches the
+  template to blank) and implies `multiLang` + `network` (and so `dataStore`). It adds
+  `server/` (Ktor), `core/api`, `core/auth`, `feature/account` and `feature/sharing`,
+  so `account` and `sharing` are reserved module names (see `reference/payload.md` →
+  *Backend*).
 - **CI → `ci: false`** by default, for both templates. Set `ci: true` only when the
   request asks for CI / GitHub Actions (`projectOptionKeywords.ci`). It is a top-level
   field, not a `featuresConfig` flag, so it never switches the template to blank.
@@ -116,6 +124,7 @@ Sepetim/                              (showcase: full example app)
 ├── androidApp/  iosApp/  shared/ (Koin + Navigation)   always
 ├── core/  (logging (always), review (always), network, database (DataStore), room, designsystem, multilang, purchases, ads, …)
 ├── feature/home/  feature/monetization/  feature/onboarding/  (blank + room: feature/notes/)
+├── server/  core/api/  core/auth/  feature/account/  feature/sharing/   (blank + backend only)
 └── build-logic/
 ```
 Get a single yes/no before generating.
@@ -124,7 +133,7 @@ Get a single yes/no before generating.
 - **Rate-limit pre-check**: if `rateLimit.isLimited` or `rateLimit.remaining == 0`,
   report the reset time (`resetSeconds` → minutes) and offer to wait / use the local
   backend. **Don't POST** — it would be a guaranteed 429.
-- Build the payload exactly per `reference/payload.md`. **showcase** →
+- Build the payload exactly per `reference/payload.md` (send `"backend": false` unless it was turned on). **showcase** →
   `templateType:"showcase"`, `features` = the requested custom modules (`[]` if none;
   a `featuresConfig` is harmless).
   **blank** → the chosen `featuresConfig` + `features`.
@@ -171,6 +180,12 @@ purchases disabled and the paywall shows a message); if it has `core/ads`, say i
 uses Google's test ad unit IDs and asks for UMP/ATT consent on the first visit to the
 ads screen (a real app should ask at launch; the EEA consent debug geography is
 debug-only). If it has `feature/notes`, say Notes is a demo: replace it or remove it.
+If it has `server/` (backend on), say what to do next: add the user's own Firebase
+config files (`androidApp/google-services.json`, `iosApp/iosApp/GoogleService-Info.plist`;
+never commit them), then start the local server with `./gradlew :server:runLocal` (an
+embedded PostgreSQL kept in `.local-server/`; `./gradlew :server:resetLocal` wipes it).
+Invite links open as `<scheme>://invite/<token>`. The app's own data is added with the
+`cmp-backend` skill.
 Add one line for deep links: "deep link: `<scheme>://`" (scheme = project name in lower
 case; showcase opens `<scheme>://user/{username}` and `<scheme>://settings`, blank opens
 `<scheme>://` and `<scheme>://<module>` for each custom module).

@@ -68,7 +68,10 @@ const keywordMap = {
   // tracks purchases" is not a paywall request). No bare 'ads' / 'advert' / 'reklam' either:
   // substrings of 'downloads', 'threads', 'advertise', 'reklamasyon'.
   purchases:        ['revenuecat', 'in-app purchase', 'in app purchase', 'paywall', 'uygulama içi satın alma', 'abonelik ekranı'],
-  ads:              ['admob', 'banner ad', 'interstitial', 'rewarded ad', 'reklam göster', 'reklam ekle']
+  ads:              ['admob', 'banner ad', 'interstitial', 'rewarded ad', 'reklam göster', 'reklam ekle'],
+  // backend: explicit intent ONLY, as for purchases (naming it switches the template to blank). The skill turns it on
+  // when the request asks for a server, sign-in or sharing between users, not for an app that merely shows accounts.
+  backend:          ['backend', 'server', 'sunucu', 'sign in', 'giriş yap', 'login', 'hesap', 'account', 'paylaş', 'share with']
 };
 // Words that mean "give me the full example app".
 const templateKeywords = {
@@ -167,7 +170,8 @@ Endpoint resolution: ${c.endpointResolution}.
     "detektYamlContent": null,       // optional custom detekt.yml as a string
     "purchases": true,               // custom paywall on RevenueCat; ships a Test Store key — replace it before you ship
     "ads": true,                     // AdMob banner/interstitial/rewarded (Google test IDs) + UMP/ATT consent
-    "room": false                    // Room KMP database (core/room) + a Notes demo; only for a local database / offline storage, not preferences
+    "room": false,                   // Room KMP database (core/room) + a Notes demo; only for a local database / offline storage, not preferences
+    "backend": false                 // Ktor server (server/) + Firebase sign-in + spaces/sharing; implies multiLang + network
   },
   "features": ["profile"]            // custom modules · each ${R.moduleName} · ≤${X.moduleName} · count ≤ maxModules (${L.maxModules})
 }
@@ -194,6 +198,7 @@ Kotlin hard keywords (\`kotlinHardKeywords\`): ${c.kotlinHardKeywords.map(k => '
 - \`networkInspector: true\` ⇒ set \`network: true\`.
 - \`theming: true\` or \`multiLang: true\` ⇒ set \`dataStore: true\`.
 - \`purchases\` and \`ads\` are independent. With both on, an active premium entitlement hides the ads.
+- \`backend → multiLang, network\`: \`backend: true\` ⇒ set \`multiLang: true\` and \`network: true\` (and so \`dataStore: true\`).
 
 ## Monetization (\`purchases\`, \`ads\`)
 - \`purchases\` → \`core/purchases\` (RevenueCat KMP behind \`PurchasesManager\`: \`offer()\`, \`purchase(packageId)\`, \`restore()\`) + a custom Compose paywall and \`FirstLaunchPaywall()\` in \`feature/monetization\`.
@@ -213,6 +218,18 @@ Kotlin hard keywords (\`kotlinHardKeywords\`): ${c.kotlinHardKeywords.map(k => '
 - Turn it on only when the user asks for a local database or offline storage of structured data.
   Preferences and settings belong in DataStore (\`dataStore\`). \`room\` is independent: it implies nothing.
 - Notes is a demo: replace it or remove it. New tables go into the existing \`AppDatabase\`.
+
+## Backend (\`backend\`)
+- \`backend\` → a Ktor server in \`server/\` (Firebase ID-token check, Flyway migrations with \`V1\` = users, spaces,
+  members, invites, files; tests on an embedded PostgreSQL), \`core/api\` (models and routes shared by the app and the
+  server), \`core/auth\` (Firebase sign-in: email, Google, Apple; the backend client's token), \`feature/account\`
+  (sign-in, settings, account deletion) and \`feature/sharing\` (spaces, members, invites).
+- Blank only: showcase ignores \`featuresConfig\` and never contains the server parts.
+- Turn it on only when the user explicitly asks for a server/backend, sign-in, or sharing data with other users.
+- Invite link: \`<scheme>://invite/<token>\`. \`account\` and \`sharing\` are therefore reserved module names.
+- After generation: add your own Firebase config files (\`google-services.json\`, \`GoogleService-Info.plist\`; never
+  commit them), then start the local server with \`./gradlew :server:runLocal\` (an embedded PostgreSQL kept in
+  \`.local-server/\`; \`:server:resetLocal\` deletes it). App data is added with the \`cmp-backend\` skill.
 
 ## blank vs showcase
 - **blank**: \`featuresConfig\` reflects the user's choices; \`features\` = custom modules

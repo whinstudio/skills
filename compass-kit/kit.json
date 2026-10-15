@@ -9,7 +9,8 @@
     "cmp-verify",
     "cmp-gates",
     "cmp-commit",
-    { "name": "cmp-detekt", "requires": "detekt" }
+    { "name": "cmp-detekt", "requires": "detekt" },
+    { "name": "cmp-backend", "requires": "backend" }
   ],
   "gates": [
     { "name": "Android", "tasks": [":androidApp:assembleDebug"] },

@@ -1,9 +1,9 @@
 {
   "_generated": {
     "by": "scripts/sync-contract.sh",
-    "date": "2026-10-07"
+    "date": "2026-10-15"
   },
-  "contractVersion": "483daf037e5e",
+  "contractVersion": "f5e3149e18fb",
   "apiBaseDefault": "https://cmpose.dev",
   "endpoints": {
     "generate": "/api/generate",
@@ -71,7 +71,9 @@
   "reservedModuleNames": [
     "build",
     "monetization",
-    "notes"
+    "notes",
+    "account",
+    "sharing"
   ],
   "reservedPackagePrefix": "com.kturker.multiplatform",
   "messages": {
@@ -84,7 +86,7 @@
     "appNameInvalid": "App Name must be 1-30 characters using only letters, numbers, spaces and . _ ' - (no leading or trailing spaces)",
     "urlInvalid": "Invalid Base URL. Please enter a valid http(s) URL of at most 100 characters without spaces, quotes, backslashes or $ (e.g., https://api.example.com)",
     "maxModulesReached": "Maximum 3 feature modules allowed",
-    "moduleNameInvalid": "Module name must start with a letter, contain only lowercase letters and numbers (a-z, 0-9), and not be a Kotlin keyword (e.g., in, is, object) or one of the reserved names (build, monetization, notes)",
+    "moduleNameInvalid": "Module name must start with a letter, contain only lowercase letters and numbers (a-z, 0-9), and not be a Kotlin keyword (e.g., in, is, object) or one of the reserved names (build, monetization, notes, account, sharing)",
     "moduleNameTooLong": "Module name must be at most 20 characters",
     "moduleNameDuplicate": "Each module name can be used only once",
     "minSdkInvalid": "Min SDK must be a number between 24 and 36",
@@ -105,7 +107,8 @@
     "detektYamlContent",
     "purchases",
     "ads",
-    "room"
+    "room",
+    "backend"
   ],
   "dependencyRules": {
     "alwaysOn": [
@@ -114,6 +117,10 @@
     ],
     "implies": {
       "networkInspector": [
+        "network"
+      ],
+      "backend": [
+        "multiLang",
         "network"
       ]
     },
@@ -225,6 +232,18 @@
       "rewarded ad",
       "reklam göster",
       "reklam ekle"
+    ],
+    "backend": [
+      "backend",
+      "server",
+      "sunucu",
+      "sign in",
+      "giriş yap",
+      "login",
+      "hesap",
+      "account",
+      "paylaş",
+      "share with"
     ]
   },
   "templateKeywords": {
@@ -300,6 +319,18 @@
           "room"
         ],
         "note": "Room KMP database (bundled SQLite): AppDatabase, DAOs, schemas/"
+      },
+      "core/api": {
+        "requires": [
+          "backend"
+        ],
+        "note": "models and routes shared by the app and the server"
+      },
+      "core/auth": {
+        "requires": [
+          "backend"
+        ],
+        "note": "Firebase sign-in (email, Google, Apple); the server client's token"
       }
     },
     "featureModules": {
@@ -315,6 +346,18 @@
           "room"
         ],
         "note": "Notes demo screen on Room (blank only; showcase uses Room for favorites)"
+      },
+      "feature/account": {
+        "requires": [
+          "backend"
+        ],
+        "note": "sign-in screens and the account (blank only)"
+      },
+      "feature/sharing": {
+        "requires": [
+          "backend"
+        ],
+        "note": "shared spaces and invites (blank only)"
       }
     },
     "detektDir": {
@@ -322,6 +365,12 @@
         "detekt"
       ],
       "path": "detekt/"
+    },
+    "serverDir": {
+      "path": "server/",
+      "requires": [
+        "backend"
+      ]
     },
     "showcaseFeatures": [
       "feature/home",
