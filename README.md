@@ -49,7 +49,7 @@ Skills live in `~/.claude/skills/` (personal) or `<project>/.claude/skills/`
 you keep getting updates with `git pull`) or by **copy**:
 
 ```bash
-git clone https://github.com/Keremturker/skills.git
+git clone https://github.com/whinstudio/skills.git
 cd skills
 
 # symlink (recommended)
