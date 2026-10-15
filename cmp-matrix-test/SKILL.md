@@ -38,8 +38,8 @@ Snapshot (backend release): 10 variants — `Showcase`, `ShowcaseMod`, `BlankMin
 `BlankTheme`, `BlankLang`, `BlankFull`, `BlankPurchases`, `BlankAds` and `BlankBackend` (`BlankPurchases`
 and `BlankAds` came with the monetization release, for the in-app purchases and ads flags; Room is on in
 `BlankFull`, `BlankAds` and `BlankPurchases`, which has it alone: no custom module, theming and
-multi-language off; `BlankBackend` is the only variant with the backend, next to a custom module). A full
-run has 190 checks, five of them `Room schema unchanged by the build` (both showcases and the three Room
+multi-language off; `BlankBackend` is the only variant with the backend, next to a custom module and with detekt off, so it has no detekt rows). A full
+run has 188 checks, five of them `Room schema unchanged by the build` (both showcases and the three Room
 variants). `BlankBackend` adds the server's tests (`:server:test`), a sign-in screen check without Firebase
 config files, the invite deep link (`invite/abc` instead of `settings`) and a local server run
 (`:server:runLocal`, `GET /health`, stop). The
