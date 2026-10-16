@@ -1,38 +1,50 @@
 #!/usr/bin/env bash
-# Regenerate the skill's contract from the cmpose.dev backend source, so the
+# Regenerate the skill's contract from @cmpose/core (the generator the cmpose MCP runs), so the
 # documented validation rules can never silently drift.
 #
 # Usage:
 #   sync-contract.sh            # (re)generate reference/contract.json + reference/payload.md
 #   sync-contract.sh --check    # verify the committed contract is current
 #
-# Backend dir: env CMP_BACKEND_DIR (a checkout that has services/contract.js, the
-# backend's single contract module; contractVersion is computed only there).
-# Requires Node (the backend is Node, so it's already installed there).
+# Core source (first match wins):
+#   CMP_CORE_DIR=<dir>          a local packages/core checkout (an unreleased core)
+#   CMP_CORE_VERSION=<x.y.z>    that version from npm
+#   (neither)                   the version reference/contract.json pins (mcp.version)
+# Requires Node 20+ and npm.
 #
 # Exit codes: 0 = ok / written; 1 = --check found drift; 2 = configuration error
-# (node missing, CMP_BACKEND_DIR unset or wrong).
+# (node/npm missing, no core version, core not installable).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"   # skill root (parent of scripts/)
 MODE="generate"
 [ "${1:-}" = "--check" ] && MODE="check"
 
-# Point this at your cmpose.dev backend checkout (the generator's source of truth).
-BACKEND_DIR="${CMP_BACKEND_DIR:-}"
-
 command -v node >/dev/null 2>&1 || { echo "ERROR: node is required for sync-contract.sh"; exit 2; }
-[ -n "$BACKEND_DIR" ] || { echo "ERROR: set CMP_BACKEND_DIR to your cmpose.dev backend checkout"; exit 2; }
-[ -d "$BACKEND_DIR" ] || { echo "ERROR: backend dir not found: $BACKEND_DIR"; exit 2; }
-[ -f "$BACKEND_DIR/services/contract.js" ] || { echo "ERROR: $BACKEND_DIR/services/contract.js missing"; exit 2; }
 
-DOTENV_CONFIG_QUIET=true SKILL_DIR="$HERE" BACKEND_DIR="$BACKEND_DIR" MODE="$MODE" node <<'NODE'
+CORE_DIR="${CMP_CORE_DIR:-}"
+if [ -z "$CORE_DIR" ]; then
+  command -v npm >/dev/null 2>&1 || { echo "ERROR: npm is required for sync-contract.sh"; exit 2; }
+  VER="${CMP_CORE_VERSION:-}"
+  if [ -z "$VER" ] && [ -f "$HERE/reference/contract.json" ]; then
+    VER="$(node -e 'try { process.stdout.write(require(process.argv[1]).mcp.version || "") } catch (e) {}' "$HERE/reference/contract.json")"
+  fi
+  [ -n "$VER" ] || { echo "ERROR: set CMP_CORE_VERSION (e.g. 0.3.0) or CMP_CORE_DIR"; exit 2; }
+  TMP_CORE="$(mktemp -d)"
+  trap 'rm -rf "$TMP_CORE"' EXIT
+  npm install --prefix "$TMP_CORE" --no-save --no-audit --no-fund --loglevel=error "@cmpose/core@$VER" >/dev/null \
+    || { echo "ERROR: npm could not install @cmpose/core@$VER"; exit 2; }
+  CORE_DIR="$TMP_CORE/node_modules/@cmpose/core"
+fi
+[ -f "$CORE_DIR/package.json" ] || { echo "ERROR: @cmpose/core not found at $CORE_DIR"; exit 2; }
+
+SKILL_DIR="$HERE" CORE_DIR="$CORE_DIR" MODE="$MODE" node <<'NODE'
 'use strict';
 const fs = require('fs');
 const path = require('path');
 
 const SKILL_DIR = process.env.SKILL_DIR;
-const BACKEND_DIR = process.env.BACKEND_DIR;
+const CORE_DIR = process.env.CORE_DIR;
 const MODE = process.env.MODE;
 
 const contractPath = path.join(SKILL_DIR, 'reference', 'contract.json');
@@ -40,17 +52,17 @@ const payloadPath  = path.join(SKILL_DIR, 'reference', 'payload.md');
 
 const warnings = [];
 
-// The backend's single contract module: facts + version live there, not here.
-let contractFacts, contractVersion;
+// The generator's own contract: @cmpose/core computes the facts and the version; never the skill.
+let core;
 try {
-  ({ contractFacts, contractVersion } = require(path.join(BACKEND_DIR, 'services', 'contract.js')));
-  if (typeof contractFacts !== 'function' || typeof contractVersion !== 'function') throw new Error('contractFacts/contractVersion not exported');
+  core = require(CORE_DIR);
+  if (typeof core.contractFacts !== 'function' || typeof core.hashContract !== 'function') throw new Error('contractFacts/hashContract not exported');
 } catch (e) {
-  console.error('ERROR: cannot load services/contract.js from CMP_BACKEND_DIR: ' + e.message);
+  console.error('ERROR: cannot load @cmpose/core from ' + CORE_DIR + ': ' + e.message);
   process.exit(2);
 }
 
-// --- Hand-maintained maps (NOT derivable from the backend over HTTP) ---------
+// --- Hand-maintained maps (not part of the generator's contract)
 // TR + EN intent keywords → featuresConfig flag. Lowercase substring match.
 const keywordMap = {
   network:          ['network', 'ktor', 'networking', 'api client', 'http', 'ağ', 'istek'],
@@ -84,28 +96,23 @@ const projectOptionKeywords = {
 };
 // --- Assemble the contract (everything except the volatile _generated block) -
 function buildContract() {
-  const f = contractFacts();
+  const f = core.contractFacts();
   return {
-    contractVersion: contractVersion(),
-    apiBaseDefault: 'https://cmpose.dev',
-    endpoints: {
-      generate: '/api/generate',
-      config: '/api/config',
-      rateLimitStatus: '/api/rate-limit-status',
-      versions: '/api/versions'
+    contractVersion: core.hashContract(f),
+    // @cmpose/core and @cmpose/mcp are released together with the same version
+    mcp: {
+      package: '@cmpose/mcp',
+      version: core.version,
+      install: `claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@${core.version}`
     },
-    endpointResolution: 'env CMP_API > defaults.json.apiBase > apiBaseDefault',
-    // STATIC fallback values. At runtime the skill prefers live GET /api/config.
+    // STATIC fallback values. At runtime the skill prefers cmp_describe's contract.limits.
     limits: {
       minSdkMin: f.limits.minSdkMin,
       minSdkMax: f.limits.minSdkMax,
       iosVersionMin: f.limits.iosVersionMin,
       iosVersionMax: f.limits.iosVersionMax,
       maxModules: f.limits.maxModules,
-      sdkNote: 'targetSdk and compileSdk come from the template: GET {apiBase}/api/versions',
-      rateLimitMax: f.limits.rateLimitMax,
-      rateLimitWindowMinutes: f.limits.rateLimitWindowMinutes,
-      maxBodyLimit: f.limits.maxBodyLimit
+      sdkNote: 'targetSdk and compileSdk come from the template (build-logic/src/main/kotlin/config/AppConfig.kt of the generated project)'
     },
     maxLengths: f.maxLengths,
     regex: f.regex,
@@ -127,34 +134,31 @@ function buildContract() {
 // --- Render the human-readable mirror ---------------------------------------
 function renderPayloadMd(c, gen) {
   const L = c.limits, X = c.maxLengths, R = c.regex;
-  return `<!-- GENERATED by scripts/sync-contract.sh on ${gen.date}. Mirrors the public cmpose.dev API contract.
+  return `<!-- GENERATED by scripts/sync-contract.sh on ${gen.date} from @cmpose/core ${c.mcp.version}.
      Do not hand-edit — run \`scripts/sync-contract.sh\` to refresh. -->
 
-# \`/api/generate\` contract
+# \`cmp_generate\` arguments
 
-Mirrors the public cmpose.dev API contract (\`POST /api/generate\`). **At runtime, always
-prefer live \`GET /api/config\` + \`GET /api/versions\` over the static numbers below.**
+Mirrors the cmpose generator's contract (\`@cmpose/core\` ${c.mcp.version}, served by the local cmpose MCP
+server). **At runtime, always prefer \`cmp_describe\`'s \`contract.limits\` over the static numbers below.**
 
-## Endpoints
-- \`POST {apiBase}${c.endpoints.generate}\`, header \`Content-Type: application/json\`.
-  - Success → a **zip** (binary); the top-level folder inside is \`<projectName>\`.
-  - \`400\` → JSON \`{ "error": "<validation message>" }\`.
-  - \`429\` → JSON \`{ "error": "Too many requests", "message": "...", "retryAfterMinutes": N }\`.
-  - \`413\` → request body over \`${L.maxBodyLimit}\` (usually a huge \`detektYamlContent\`).
-  - \`503\` + \`Retry-After\` → the server is at its concurrent-generation limit; no quota was spent.
-  - \`415\` → unsupported body charset or \`Content-Encoding\` (send plain UTF-8 JSON).
-- \`GET {apiBase}${c.endpoints.config}\` → \`{ minSdkMin, minSdkMax, iosVersionMin, iosVersionMax, maxModules, reservedPackagePrefix, rateLimitMax, rateLimitWindowMinutes, contractVersion }\` (LIVE limits).
-- \`GET {apiBase}${c.endpoints.versions}\` → \`{ kotlin, agp, composeMultiplatform, gradle, jdk }\` (LIVE library/tool versions — \`jdk\` is the build JDK).
-- \`GET {apiBase}${c.endpoints.rateLimitStatus}\` → \`{ remaining, limit, resetSeconds, isLimited }\`.
-
-Endpoint resolution: ${c.endpointResolution}.
+## Tools
+- MCP server: \`${c.mcp.install}\` (Node.js 20+ and git; restart Claude Code after adding it).
+- \`cmp_describe\` (no arguments) → \`{ contractVersion, coreVersion, mcpVersion, template: { repo, ref }, defaults, contract }\`.
+- \`cmp_generate\` → writes \`<outputDir>/<projectName>\` on this machine and returns \`structuredContent\`
+  \`{ projectDir, template: { repo, ref, commit }, templateType, features, featuresConfig, warnings, nextSteps }\`.
+  - A refused request returns an error result (\`isError\`) whose text is the reason: one of the validation
+    messages below, \`<dir> already exists and is not empty\`, \`Unknown featuresConfig key(s): …\`, or a template
+    download error (the first run downloads the pinned template).
+  - It never overwrites a non-empty folder and never leaves half a project behind.
 
 ## Body
 \`\`\`jsonc
 {
+  "outputDir": "/absolute/parent/folder", // absolute; the project goes to <outputDir>/<projectName>
   "projectName": "MyApp",            // ${R.projectName}  · ≤${X.projectName} · no spaces
   "appName": "My App",               // letters/digits/space . _ ' - · trimmed · ≤${X.appName}
-  "packageName": "dev.cmpose.myapp", // ${R.packageName} · ≤${X.packageName} · ≥3 segments · no Kotlin keyword segments · not ${c.reservedPackagePrefix} or under it
+  "packageName": "com.example.myapp", // ${R.packageName} · ≤${X.packageName} · ≥3 segments · no Kotlin keyword segments · not ${c.reservedPackagePrefix} or under it
   "minSdk": "${L.minSdkMin}",                    // numeric string (1–${X.minSdk} digits) in [${L.minSdkMin}..${L.minSdkMax}]
   "iosVersion": "${L.iosVersionMin}",              // ${R.iosVersionFormat} in [${L.iosVersionMin}..${L.iosVersionMax}]
   "templateType": "blank",           // "blank" | "showcase"
@@ -177,7 +181,7 @@ Endpoint resolution: ${c.endpointResolution}.
 }
 \`\`\`
 
-## Validation rules (mirror for fast feedback; server 400 is authoritative)
+## Validation rules (mirror for fast feedback; cmp_generate's error is authoritative)
 | Field | Rule | Max len |
 |---|---|---|
 | projectName | \`${R.projectName}\`, no spaces | ${X.projectName} |
@@ -233,14 +237,14 @@ Kotlin hard keywords (\`kotlinHardKeywords\`): ${c.kotlinHardKeywords.map(k => '
 
 ## blank vs showcase
 - **blank**: \`featuresConfig\` reflects the user's choices; \`features\` = custom modules
-  (each name once; a duplicate is a 400).
+  (each name once; a duplicate is refused).
 - **showcase**: send \`templateType:"showcase"\` and put any requested custom modules in
-  \`features\` (\`features: []\` when none). The backend keeps the default \`home\` +
+  \`features\` (\`features: []\` when none). The generator keeps the default \`home\` +
   \`onboarding\` modules and **ignores \`featuresConfig\`** (it strips any
   \`home\`/\`onboarding\` you put in \`features\`). Custom modules are added next to them,
   fully wired (their screens are registered; the showcase still opens on onboarding).
 
-## Backend error messages (match these exactly when re-asking)
+## Generator error messages (match these exactly when re-asking)
 ${Object.entries(c.messages).map(([k, v]) => `- \`${k}\`: ${v}`).join('\n')}
 
 ## Anatomy (which modules appear)
@@ -266,18 +270,18 @@ if (MODE === 'check') {
   const existing = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
   delete existing._generated;
   if (JSON.stringify(fresh) !== JSON.stringify(existing)) {
-    console.error('DRIFT: reference/contract.json is out of sync with the backend. Run scripts/sync-contract.sh to refresh.');
+    console.error('DRIFT: reference/contract.json is out of sync with @cmpose/core. Run scripts/sync-contract.sh to refresh.');
     // Best-effort field-level hint
     for (const k of Object.keys(fresh)) {
       if (JSON.stringify(fresh[k]) !== JSON.stringify(existing[k])) console.error(`  changed: ${k}`);
     }
     process.exit(1);
   }
-  console.log('OK: contract.json is in sync with the backend' + (warnings.length ? ` (warnings: ${warnings.length})` : ''));
+  console.log('OK: contract.json is in sync with @cmpose/core' + (warnings.length ? ` (warnings: ${warnings.length})` : ''));
   process.exit(0);
 }
 
-// generate mode (no backend path / sha recorded — keep the public repo free of private-backend provenance)
+// generate mode (no local path recorded: the public repo names only the npm version)
 const gen = {
   by: 'scripts/sync-contract.sh',
   date: new Date().toISOString().slice(0, 10)

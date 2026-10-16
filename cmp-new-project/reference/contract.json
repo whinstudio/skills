@@ -1,27 +1,21 @@
 {
   "_generated": {
     "by": "scripts/sync-contract.sh",
-    "date": "2026-10-15"
+    "date": "2026-10-16"
   },
-  "contractVersion": "f5e3149e18fb",
-  "apiBaseDefault": "https://cmpose.dev",
-  "endpoints": {
-    "generate": "/api/generate",
-    "config": "/api/config",
-    "rateLimitStatus": "/api/rate-limit-status",
-    "versions": "/api/versions"
+  "contractVersion": "32bec62e5553",
+  "mcp": {
+    "package": "@cmpose/mcp",
+    "version": "0.2.8",
+    "install": "claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.2.8"
   },
-  "endpointResolution": "env CMP_API > defaults.json.apiBase > apiBaseDefault",
   "limits": {
     "minSdkMin": 24,
     "minSdkMax": 36,
     "iosVersionMin": "15.0",
     "iosVersionMax": "26.2",
     "maxModules": 3,
-    "sdkNote": "targetSdk and compileSdk come from the template: GET {apiBase}/api/versions",
-    "rateLimitMax": 5,
-    "rateLimitWindowMinutes": 15,
-    "maxBodyLimit": "500kb"
+    "sdkNote": "targetSdk and compileSdk come from the template (build-logic/src/main/kotlin/config/AppConfig.kt of the generated project)"
   },
   "maxLengths": {
     "projectName": 30,

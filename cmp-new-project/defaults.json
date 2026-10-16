@@ -1,6 +1,5 @@
 {
-  "apiBase": "https://cmpose.dev",
-  "packagePrefix": "dev.cmpose",
+  "packagePrefix": "com.example",
   "outputDir": "~/StudioProjects",
   "minSdk": "24",
   "iosVersion": "15.0",
