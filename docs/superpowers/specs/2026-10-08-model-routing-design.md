@@ -10,7 +10,7 @@ test ve Maestro flow yazmak, commit, arama) daha ucuz modele gitsin; kod yazmak 
 Kapsam iki taraf:
 
 - **Repodaki skiller** — özellikle `compass-kit` ile üretilen her projeye giden `cmp-*` skilleri
-  (cmpose.dev kullanıcılarını da etkiler).
+  (cmpose kullanıcılarını da etkiler).
 - **Kerem'in kendi kullanımı** — global `~/.claude/CLAUDE.md`, superpowers subagent'ları,
   `account-delegate`.
 

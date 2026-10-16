@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Checks the frontmatter rules of every <skill>/SKILL.md and that compass-kit/kit.json names
-# existing skills. See docs/superpowers/specs/2026-10-08-model-routing-design.md.
+# Checks the frontmatter rules of every <skill>/SKILL.md, that compass-kit/kit.json names
+# existing skills, that the old cmpose domain is gone and cmp-new-project's MCP pin is shown.
 # Usage: check-skills.sh [repo root]. Exit 0 ok, 1 violations (one "FAIL: <skill>: ..." each).
 set -uo pipefail
 ROOT="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
@@ -31,5 +31,18 @@ if [ -f "$KIT" ]; then
   while IFS= read -r s; do
     [ -f "$ROOT/$s/SKILL.md" ] || bad "$s" "listed in kit.json but $s/SKILL.md is missing"
   done < <(jq -r '.skills[] | if type == "string" then . else .name end' "$KIT")
+fi
+# R7: the old cmpose domain lapses and may go to someone else: it must not come back anywhere.
+# This script and its test are excluded (the test assembles the literal from pieces).
+while IFS= read -r hit; do
+  [ -n "$hit" ] && bad "domain" "${hit#"$ROOT"/}"
+done < <(grep -rnIE --exclude-dir=.git 'cmpose\.dev' "$ROOT" 2>/dev/null \
+  | grep -vE '/scripts/(check-skills|test_check_skills)\.sh:')
+# R8: cmp-new-project's README shows the exact MCP install command its contract pins
+C="$ROOT/cmp-new-project/reference/contract.json"
+if [ -f "$C" ]; then
+  install="$(jq -r '.mcp.install // empty' "$C")"
+  if [ -z "$install" ]; then bad cmp-new-project "reference/contract.json has no mcp.install (run scripts/sync-contract.sh)"
+  elif ! grep -qF -- "$install" "$ROOT/cmp-new-project/README.md"; then bad cmp-new-project "README.md does not show '$install'"; fi
 fi
 exit "$fail"

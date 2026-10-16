@@ -17,7 +17,7 @@ with `/<skill-name>`.
 
 | Skill | What it does |
 |---|---|
-| [`cmp-new-project`](./cmp-new-project) | Generate a Compose Multiplatform (Kotlin Multiplatform) project from the terminal via the [cmpose.dev](https://cmpose.dev) API — the chat equivalent of the cmpose.dev web wizard. |
+| [`cmp-new-project`](./cmp-new-project) | Generate a Compose Multiplatform (Kotlin Multiplatform) project from the terminal through the local cmpose MCP server (`@cmpose/mcp`), asking only four questions. |
 | [`cmp-feature`](./cmp-feature) | Add a screen, feature module or data source to a generated app — the contract, domain, data and presentation layers, ViewModel, navigation destination and Koin wiring. |
 | [`cmp-design-to-code`](./cmp-design-to-code) | Build or adjust UI from a provided design (exported boards, mockup or screenshot) by measuring it, mapping every value to a theme token and checking the result against the design. |
 | [`cmp-code-rules`](./cmp-code-rules) | Rules for every Kotlin change in a generated project — layering, visibility, Multiplatform limits, Compose state, Koin annotations, resources, accessibility — plus a self-review checklist. |
@@ -28,7 +28,7 @@ with `/<skill-name>`.
 | [`cmp-verify`](./cmp-verify) | When to build, how to read gate output, and recipes for the common Kotlin Multiplatform, KSP, Koin and Compose resources failures. |
 | [`cmp-gates`](./cmp-gates) | Run the finish gates in a separate Sonnet subagent and get a short pass/fail report; fixes only mechanical failures with a written recipe and reports the rest. |
 | [`cmp-commit`](./cmp-commit) | On explicit request, split the work into atomic commits, run the finish gates and write Conventional Commits messages — committing only, never pushing unless asked. |
-| [`cmp-matrix-test`](./cmp-matrix-test) | Run the cmpose.dev generator's release matrix (every variant built and launched as a release build on an Android emulator and an iOS simulator) through the backend's smoke gate, and report with screenshots. Requires a cmpose.dev backend checkout. |
+| [`cmp-matrix-test`](./cmp-matrix-test) | Run the cmpose generator's release matrix (every variant built and launched as a release build on an Android emulator and an iOS simulator) through the smoke gate of the private release-tools repo, and report with screenshots. Requires a checkout of that repo. |
 | [`account-delegate`](./account-delegate) | Offer to hand a self-contained job to a second Claude Code account on the same machine (headless, live in a side cmux pane) and bring its report — or a worktree branch to merge — back to your main session. |
 
 **Models.** Skills that write application code (`cmp-code-rules`, `cmp-feature`,

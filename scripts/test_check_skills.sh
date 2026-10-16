@@ -32,5 +32,15 @@ check "R6 kit skill without folder fails" bash -c '[ "$1" -eq 1 ] && grep -q "FA
 reset; skill c "name: c" "description: >-" "  model: opus in text" "context: fork" "background: false"; runc
 check "indented text inside a folded value is not a key" test "$CODE" -eq 0
 
+DOMAIN="cmpose"".dev"   # assembled: this file must not hold the literal
+reset; printf 'see %s\n' "$DOMAIN" > "$TMP/a/notes.md"; runc
+check "R7 the old domain anywhere fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: domain: a/notes.md:1:" <<<"$2"' _ "$CODE" "$OUT"
+reset; mkdir -p "$TMP/cmp-new-project/reference"; skill cmp-new-project "name: cmp-new-project"
+echo '{"mcp":{"install":"claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@9.9.9"}}' > "$TMP/cmp-new-project/reference/contract.json"
+echo 'install: claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@1.0.0' > "$TMP/cmp-new-project/README.md"; runc
+check "R8 README with another MCP version fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: cmp-new-project: README.md does not show" <<<"$2"' _ "$CODE" "$OUT"
+echo 'install: claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@9.9.9' > "$TMP/cmp-new-project/README.md"; runc
+check "R8 README with the pinned MCP command passes" test "$CODE" -eq 0
+
 rm -rf "${TMP:?}"
 exit "$fail"

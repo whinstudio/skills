@@ -13,7 +13,7 @@ All data belongs to a **space**. Every user has a personal space (created on the
 sharing on they can create more and invite others as EDITOR or VIEWER. Roles order VIEWER < EDITOR < OWNER: a
 viewer reads, an editor adds, changes and deletes records and files, the owner also manages members and invites.
 
-`<package>` below is the project's package (for example `dev.cmpose.trips`); paths are relative to the project root.
+`<package>` below is the project's package (for example `com.example.trips`); paths are relative to the project root.
 For the client layers follow `cmp-feature` and `cmp-code-rules` as for any feature; this skill adds what is
 specific to the backend.
 

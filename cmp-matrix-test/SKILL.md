@@ -3,8 +3,8 @@ name: cmp-matrix-test
 model: sonnet
 effort: medium
 description: >-
-  Run the cmpose.dev generator's release matrix — the smoke gate of the (private)
-  cmpose.dev backend (`npm run smoke`). It generates every variant (showcase and the blank
+  Run the cmpose generator's release matrix — the smoke gate of the (private)
+  cmpose release-tools repo (`npm run smoke`). It generates every variant (showcase and the blank
   feature combinations) from one CmpTemplate ref, checks each project, builds Android and
   iOS, runs detekt (the project's config, then compass-kit's) and the unit tests (Koin
   graph check included), launches every variant's RELEASE build on an Android emulator and
@@ -15,7 +15,7 @@ description: >-
 
 # cmp-matrix-test
 
-Runs the cmpose.dev backend's smoke gate and reports the result. Skill directory:
+Runs the cmpose release-tools repo's smoke gate and reports the result. Skill directory:
 `~/.claude/skills/cmp-matrix-test/`. The matrix itself lives in the backend
 (`scripts/smoke/`) and is the source of truth; the variant list and check counts in step 2 are
 a snapshot to check a run against.
@@ -23,15 +23,15 @@ a snapshot to check a run against.
 ## 1. Locate the backend
 
 `$CMP_BACKEND_DIR` is required (no default path). If it is unset, or there is no `package.json`
-with a `smoke` script there, stop and tell the user to set `CMP_BACKEND_DIR` to their cmpose.dev
-backend checkout (e.g. in their shell profile).
+with a `smoke` script there, stop and tell the user to set `CMP_BACKEND_DIR` to their cmpose
+release-tools checkout (e.g. in their shell profile).
 
 ## 2. Show what will run
 
 Print the variants from the backend (the single source of truth). `$B` is the backend path from
 step 1 (`$CMP_BACKEND_DIR`):
 
-    B=${CMP_BACKEND_DIR:?set CMP_BACKEND_DIR to your cmpose.dev backend checkout}
+    B=${CMP_BACKEND_DIR:?set CMP_BACKEND_DIR to your cmpose release-tools checkout}
     node -e "console.table(require('$B/scripts/smoke/variants.js').map(v => ({ name: v.name, type: v.templateType, package: v.packageName, modules: (v.features || []).join(' '), featuresConfig: JSON.stringify(v.featuresConfig || 'showcase defaults') })))"
 
 Snapshot (backend release): 10 variants — `Showcase`, `ShowcaseMod`, `BlankMin`, `BlankNet`,
@@ -44,7 +44,7 @@ variants). `BlankBackend` adds the server's tests (`:server:test`), a sign-in sc
 config files, the invite deep link (`invite/abc` instead of `settings`) and a local server run
 (`:server:runLocal`, `GET /health`, stop). The
 `--build-only` count was not re-measured for this release (69 at the monetization release, before Room);
-it holds the checks that do not need the emulator/simulator or a release run, one of them `release is minified (mapping.txt)`; one check asserts that the skill's `contractVersion` (read from `CMP_SKILLS_DIR`, default the sibling skills checkout) equals the backend's. On every variant with detekt the smoke runs detekt
+it holds the checks that do not need the emulator/simulator or a release run, one of them `release is minified (mapping.txt)`; one check asserts that the skill's `contractVersion` (read from `CMP_SKILLS_DIR`, default the sibling skills checkout) equals @cmpose/core's. On every variant with detekt the smoke runs detekt
 twice: with the project's own config, then with compass-kit's (`detekt (compass-kit rules)`, the
 gate Compass applies). If the table or the final count differs, the backend changed: go
 by the backend and mention the difference in the report.
