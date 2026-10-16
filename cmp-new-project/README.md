@@ -1,23 +1,26 @@
 # cmp-new-project
 
 > Generate a Compose Multiplatform (Kotlin Multiplatform) project from the terminal
-> via the [cmpose.dev](https://cmpose.dev) generator — the chat equivalent of the
-> cmpose.dev web wizard.
+> with the cmpose generator, running on your machine as the cmpose MCP server.
 
 When invoked, the skill asks **only four things** (one at a time), uses smart
-defaults for the rest, then calls the API, extracts the zip, sets up the project,
+defaults for the rest, then generates the project locally, sets up the project,
 opens the IDE, and verifies the Android/iOS builds.
 
 ## Requirements
 
 - [Claude Code](https://code.claude.com)
-- `curl`, `unzip`, `git` (always needed)
-- Internet access to `https://cmpose.dev` (or a local backend via `CMP_API`)
+- The cmpose MCP server, added once (Node.js 20+ and git):
+
+      claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.2.8
+
+  then restart Claude Code. Without it the skill stops and prints this command.
+- Internet access once, for the first generation (it downloads the pinned template)
 - Optional, for the local build/run verification:
-  - **JDK 21** (the template uses AGP 9; matches `/api/versions` `jdk`) — Android build
+  - **JDK 21** (the template uses AGP 9) — Android build
   - **Android SDK** — Android build
   - **macOS + Xcode** — iOS simulator run
-- `node` — only to (re)generate the contract with `sync-contract.sh`
+- `npm` — only to (re)generate the contract with `sync-contract.sh`
 
 The skill **degrades gracefully**: missing tools are skipped and reported, never fatal.
 
@@ -37,8 +40,8 @@ Invoke the skill and answer four prompts (asked one at a time):
 
 1. **Project name** — letters only → `rootProject.name`
 2. **App name** — the user-visible name
-3. **Package name** — offered as `dev.cmpose.<segment>` (Android `applicationId` + iOS bundle id)
-4. **Output directory** — default `~/StudioProjects/<project>`
+3. **Package name** — offered as `com.example.<segment>` (Android `applicationId` + iOS bundle id)
+4. **Output directory** — default `~/StudioProjects` (the project goes to `~/StudioProjects/<project>`)
 
 Everything else uses smart defaults (shown on the confirmation screen, changeable
 there or in your request):
@@ -79,14 +82,11 @@ After generation:
 
 | key | default | meaning |
 |---|---|---|
-| `apiBase` | `https://cmpose.dev` | generator endpoint |
-| `packagePrefix` | `dev.cmpose` | package prefix offered for the package question |
+| `packagePrefix` | `com.example` | package prefix offered for the package question |
 | `outputDir` | `~/StudioProjects` | where projects are created |
 | `minSdk` / `iosVersion` | `24` / `15.0` | default SDK / iOS target |
 | `ide` / `openIde` | `Android Studio` / `true` | IDE opened after generation |
 | `autoBuildAndroid` / `autoRunIos` | `true` / `true` | post-generation verification |
-
-Override the endpoint per run: `CMP_API=http://localhost:3000`.
 
 **Model / effort:** the skill runs on **Sonnet (medium effort)** via `SKILL.md`
 frontmatter — the reliability/cost sweet spot for this mostly mechanical flow — and
@@ -94,30 +94,26 @@ your session model resumes afterward.
 
 ## How it works
 
-1. `scripts/preflight.sh` → live `/api/config` + `/api/versions` + `/api/rate-limit-status` (one call).
-2. Collect the four fields; validate each against `reference/contract.json`.
-3. Confirm with a project **"anatomy"** preview (the module tree).
-4. `scripts/generate.sh` → POST the payload → download + extract the zip.
-5. `scripts/setup.sh` → write `local.properties` (`sdk.dir`) + `git init` + initial commit.
-6. `scripts/doctor.sh` → capabilities → `build-android.sh` / `run-ios.sh` (background, optional).
+1. Checks that the cmpose MCP tools (`cmp_describe`, `cmp_generate`) are connected; stops with the install command otherwise.
+2. `cmp_describe` → the generator's limits, defaults and pinned template.
+3. Collect the four fields; validate each against `reference/contract.json`.
+4. Confirm with a project **"anatomy"** preview (the module tree).
+5. `cmp_generate` → the project is written to `<outputDir>/<projectName>`.
+6. `scripts/setup.sh` → write `local.properties` (`sdk.dir`) + `git init` + initial commit.
+7. `scripts/doctor.sh` → capabilities → `build-android.sh` / `run-ios.sh` (background, optional).
 
-## Contract stays in sync with the backend
+## Contract stays in sync with the generator
 
-`reference/contract.json` and `reference/payload.md` are **generated** from the
-cmpose.dev backend source by `scripts/sync-contract.sh`, which keeps the validation
-rules aligned with the backend at each release. A skill clone that lags behind is
-reported at runtime (`contractCurrent` from `preflight.sh`), and the live `config`
-then overrides the stale numbers:
+`reference/contract.json` and `reference/payload.md` are **generated** from `@cmpose/core` (the
+library the cmpose MCP runs) by `scripts/sync-contract.sh`. A skill clone that lags behind is
+reported at runtime (its `contractVersion` differs from `cmp_describe`'s), and the MCP's limits are
+used:
 
 ```bash
-CMP_BACKEND_DIR=/path/to/backend bash scripts/sync-contract.sh              # regenerate
-CMP_BACKEND_DIR=/path/to/backend bash scripts/sync-contract.sh --check      # drift gate (CI-friendly)
-# exit codes: 0 = in sync, 1 = drift, 2 = configuration error (node / CMP_BACKEND_DIR)
+CMP_CORE_VERSION=0.2.8 bash scripts/sync-contract.sh     # regenerate from that npm version
+bash scripts/sync-contract.sh --check                    # drift gate (the pinned version)
+# exit codes: 0 = in sync, 1 = drift, 2 = configuration error (node / npm / core version)
 ```
-
-At runtime, **live** `/api/config` + `/api/versions` always override the static
-numbers; `contract.json` is the offline fallback and the source for the regexes /
-message strings the API doesn't expose.
 
 ## Files
 
@@ -129,10 +125,8 @@ cmp-new-project/
 │   ├── contract.json   # generated, machine-readable contract
 │   └── payload.md      # generated, human-readable contract
 └── scripts/
-    ├── preflight.sh    # live config/versions/rate-limit
-    ├── sync-contract.sh# (re)generate the contract from the backend (+ --check)
+    ├── sync-contract.sh# (re)generate the contract from @cmpose/core (+ --check)
     ├── doctor.sh       # environment capability probe
-    ├── generate.sh     # POST + download + extract
     ├── setup.sh        # local.properties + git
     ├── build-android.sh# assembleDebug (config cache on) + APK check + unit tests + detekt if enabled (JDK 21)
     └── run-ios.sh      # build + install + launch on a simulator
@@ -140,5 +134,5 @@ cmp-new-project/
 
 ## Notes
 
-- The cmpose.dev demo API is **rate-limited**: 5 generations per 15 minutes per IP.
-- A generated project is only as correct as the deployed cmpose.dev.
+- Generation is local: no account, no API key, no upload, no rate limit.
+- A generated project is only as correct as the pinned template of the installed `@cmpose/mcp`.

@@ -24,10 +24,16 @@ ANDROID_SDK=null; [ -d "$SDK" ] && ANDROID_SDK="\"$SDK\""
 have() { command -v "$1" >/dev/null 2>&1 && echo true || echo false; }
 XCODE="$( { [ "$MACOS" = true ] && command -v xcodebuild >/dev/null 2>&1; } && echo true || echo false)"
 CURL="$(have curl)"; UNZIP="$(have unzip)"; NODE="$(have node)"; GIT="$(have git)"
+# The cmpose MCP server (npx @cmpose/mcp) needs Node.js 20 or newer
+NODE20=false
+if [ "$NODE" = true ]; then
+  NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0)"
+  [ "$NODE_MAJOR" -ge 20 ] 2>/dev/null && NODE20=true
+fi
 
 CAN_ANDROID=false; { [ "$JDK21" = true ] && [ "$ANDROID_SDK" != null ]; } && CAN_ANDROID=true
 CAN_IOS=false;     { [ "$MACOS" = true ] && [ "$XCODE" = true ]; } && CAN_IOS=true
 
-printf '{"os":"%s","macos":%s,"jdk21":%s,"jdk21Home":%s,"androidSdk":%s,"xcode":%s,"curl":%s,"unzip":%s,"node":%s,"git":%s,"canBuildAndroid":%s,"canRunIos":%s}\n' \
+printf '{"os":"%s","macos":%s,"jdk21":%s,"jdk21Home":%s,"androidSdk":%s,"xcode":%s,"curl":%s,"unzip":%s,"node":%s,"node20":%s,"git":%s,"canBuildAndroid":%s,"canRunIos":%s}\n' \
   "$OS" "$MACOS" "$JDK21" "$([ -n "$JDK21_HOME" ] && echo "\"$JDK21_HOME\"" || echo null)" \
-  "$ANDROID_SDK" "$XCODE" "$CURL" "$UNZIP" "$NODE" "$GIT" "$CAN_ANDROID" "$CAN_IOS"
+  "$ANDROID_SDK" "$XCODE" "$CURL" "$UNZIP" "$NODE" "$NODE20" "$GIT" "$CAN_ANDROID" "$CAN_IOS"
