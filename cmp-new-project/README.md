@@ -12,7 +12,7 @@ opens the IDE, and verifies the Android/iOS builds.
 - [Claude Code](https://code.claude.com)
 - The cmpose MCP server, added once (Node.js 20+ and git):
 
-      claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.2.8
+      claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.3.0
 
   then restart Claude Code. Without it the skill stops and prints this command.
 - Internet access once, for the first generation (it downloads the pinned template)
@@ -110,7 +110,7 @@ reported at runtime (its `contractVersion` differs from `cmp_describe`'s), and t
 used:
 
 ```bash
-CMP_CORE_VERSION=0.2.8 bash scripts/sync-contract.sh     # regenerate from that npm version
+CMP_CORE_VERSION=0.3.0 bash scripts/sync-contract.sh     # regenerate from that npm version
 bash scripts/sync-contract.sh --check                    # drift gate (the pinned version)
 # exit codes: 0 = in sync, 1 = drift, 2 = configuration error (node / npm / core version)
 ```

@@ -6,8 +6,8 @@
   "contractVersion": "32bec62e5553",
   "mcp": {
     "package": "@cmpose/mcp",
-    "version": "0.2.8",
-    "install": "claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.2.8"
+    "version": "0.3.0",
+    "install": "claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.3.0"
   },
   "limits": {
     "minSdkMin": 24,
