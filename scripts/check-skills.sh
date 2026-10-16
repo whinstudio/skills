@@ -38,11 +38,16 @@ while IFS= read -r hit; do
   [ -n "$hit" ] && bad "domain" "${hit#"$ROOT"/}"
 done < <(grep -rnIE --exclude-dir=.git 'cmpose\.dev' "$ROOT" 2>/dev/null \
   | grep -vE '/scripts/(check-skills|test_check_skills)\.sh:')
-# R8: cmp-new-project's README shows the exact MCP install command its contract pins
+# R8: cmp-new-project's README and SKILL.md show the exact MCP install command its contract pins
+# (SKILL.md prints it when the MCP is missing, without having to read the contract)
 C="$ROOT/cmp-new-project/reference/contract.json"
 if [ -f "$C" ]; then
   install="$(jq -r '.mcp.install // empty' "$C")"
   if [ -z "$install" ]; then bad cmp-new-project "reference/contract.json has no mcp.install (run scripts/sync-contract.sh)"
-  elif ! grep -qF -- "$install" "$ROOT/cmp-new-project/README.md"; then bad cmp-new-project "README.md does not show '$install'"; fi
+  else
+    for f in README.md SKILL.md; do
+      grep -qF -- "$install" "$ROOT/cmp-new-project/$f" || bad cmp-new-project "$f does not show '$install'"
+    done
+  fi
 fi
 exit "$fail"

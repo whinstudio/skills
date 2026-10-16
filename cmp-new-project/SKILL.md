@@ -32,10 +32,14 @@ stale skill is visible — see *Maintenance*.
 1. **The cmpose MCP server must be connected.** Its tools are `cmp_describe` and `cmp_generate`
    (usually listed as `mcp__cmpose__cmp_describe` / `mcp__cmpose__cmp_generate`). If they are not
    available in this session, **stop before asking anything** and tell the user, in their language:
-   - the generator runs locally as an MCP server; add it once with the command in
-     `reference/contract.json` → `mcp.install`, then restart Claude Code (`/exit`, then `claude`)
-     and ask again;
-   - it needs Node.js 20+ and git: run `scripts/doctor.sh` and report `node20` and `git`.
+   - the generator runs locally as an MCP server; add it once with this command (the same as
+     `reference/contract.json` → `mcp.install`), then restart Claude Code (`/exit`, then `claude`)
+     and ask again:
+
+         claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.2.8
+
+   - it needs Node.js 20+ and git: run `scripts/doctor.sh` and report `node20` and `git` (if it
+     cannot run, just say so).
    Never generate any other way (no web API, no copying a template by hand).
 2. Read `reference/contract.json` (regexes, max lengths, generator messages, dependency rules,
    `anatomy`, TR+EN `keywordMap`) and `defaults.json` (prefs).
