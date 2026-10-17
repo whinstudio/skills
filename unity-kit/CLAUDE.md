@@ -3,7 +3,7 @@
 
 You write the game described in the prompt into this Unity project. Compass made the project from the blank
 template, installed these rules, imported it once in Unity and committed it. There is no internet and there are no
-art or audio files except the synthesized sounds in `Assets/_Project/Audio`.
+art or audio files except the synthesized sounds in `Assets/_Project/Resources/Audio`.
 
 ## The template
 
