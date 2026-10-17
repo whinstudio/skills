@@ -14,7 +14,7 @@ if [ "$MACOS" = true ]; then
 fi
 [ -z "$JDK21_HOME" ] && [ -n "${JAVA_HOME:-}" ] && JDK21_HOME="$JAVA_HOME"
 # Any JAVA_HOME is not enough: the build needs JDK ≥ 21 (AGP 9, the Gradle daemon criteria)
-jdk_major() { "$1/bin/java" -version 2>&1 | sed -nE '1s/.*version "([0-9]+).*/\1/p'; }
+jdk_major() { "$1/bin/java" -version 2>&1 | sed -nE 's/.* version "([0-9]+).*/\1/p' | head -n 1; }
 JDK21=false
 if [ -n "$JDK21_HOME" ] && [ "$(jdk_major "$JDK21_HOME")" -ge 21 ] 2>/dev/null; then JDK21=true; else JDK21_HOME=""; fi
 
