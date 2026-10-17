@@ -45,6 +45,24 @@ check "R8 README and SKILL.md with the pinned MCP command pass" test "$CODE" -eq
 skill cmp-new-project "name: cmp-new-project"; runc
 check "R8 SKILL.md without the MCP command fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: cmp-new-project: SKILL.md does not show" <<<"$2"' _ "$CODE" "$OUT"
 
+INSTALL='claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@9.9.9'
+npskill() { # $1 = *-new-project folder; SKILL.md and README.md show the pinned MCP command
+  skill "$1" "name: $1" "model: sonnet" "effort: medium"
+  echo "install: $INSTALL" >> "$TMP/$1/SKILL.md"; echo "install: $INSTALL" > "$TMP/$1/README.md"
+}
+reset; mkdir -p "$TMP/cmp-new-project/reference"; npskill cmp-new-project
+echo "{\"mcp\":{\"install\":\"$INSTALL\"}}" > "$TMP/cmp-new-project/reference/contract.json"
+npskill game-new-project; npskill backend-new-project; runc
+check "R8 *-new-project skills with the pinned MCP command pass" test "$CODE" -eq 0
+echo 'install: claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@1.0.0' > "$TMP/game-new-project/README.md"; runc
+check "R8 game-new-project README with another MCP version fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: game-new-project: README.md does not show '"'"'$3'"'"'" <<<"$2"' _ "$CODE" "$OUT" "$INSTALL"
+rm "$TMP/game-new-project/README.md"; runc
+check "R8 *-new-project skill without a README fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: game-new-project: README.md is missing" <<<"$2"' _ "$CODE" "$OUT"
+npskill game-new-project; skill backend-new-project "name: backend-new-project" "model: sonnet" "effort: medium"; runc
+check "R8 backend-new-project SKILL.md without the MCP command fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: backend-new-project: SKILL.md does not show" <<<"$2"' _ "$CODE" "$OUT"
+reset; npskill game-new-project; runc
+check "R8 *-new-project skill without cmp-new-project's contract fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: game-new-project: cannot check the MCP install command" <<<"$2"' _ "$CODE" "$OUT"
+
 ukit() { # a complete unity-kit/
   local d="$TMP/unity-kit"; mkdir -p "$d"
   echo '{ "version": 1 }' > "$d/kit.json"; echo '{}' > "$d/settings.json"; echo '# unity-kit' > "$d/README.md"

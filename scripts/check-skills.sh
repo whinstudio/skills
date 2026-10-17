@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Checks the frontmatter rules of every <skill>/SKILL.md, that compass-kit/kit.json names
-# existing skills, that the old cmpose domain is gone and cmp-new-project's MCP pin is shown.
+# existing skills, that the old cmpose domain is gone and every *-new-project skill shows the MCP pin.
 # Usage: check-skills.sh [repo root]. Exit 0 ok, 1 violations (one "FAIL: <skill>: ..." each).
 set -uo pipefail
 ROOT="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
@@ -10,7 +10,7 @@ fm() { # $1 = SKILL.md, $2 = key → top-level value (unquoted), empty when abse
   awk -v k="$2" 'NR==1 && $0!="---"{exit} NR>1 && $0=="---"{exit}
     NR>1 && index($0, k": ")==1 {v=substr($0, length(k)+3); gsub(/^["'\'']|["'\'']$/, "", v); print v; exit}' "$1"
 }
-INLINE_OK=" cmp-commit cmp-new-project cmp-matrix-test "
+INLINE_OK=" cmp-commit cmp-new-project cmp-matrix-test backend-new-project game-new-project "
 CODE_SKILLS=" cmp-code-rules cmp-feature cmp-design-to-code "
 for f in "$ROOT"/*/SKILL.md; do
   [ -f "$f" ] || continue
@@ -50,16 +50,22 @@ while IFS= read -r hit; do
   [ -n "$hit" ] && bad "domain" "${hit#"$ROOT"/}"
 done < <(grep -rnIE --exclude-dir=.git 'cmpose\.dev' "$ROOT" 2>/dev/null \
   | grep -vE '/scripts/(check-skills|test_check_skills)\.sh:')
-# R8: cmp-new-project's README and SKILL.md show the exact MCP install command its contract pins
-# (SKILL.md prints it when the MCP is missing, without having to read the contract)
+# R8: every *-new-project skill's README and SKILL.md show the exact MCP install command that
+# cmp-new-project's contract pins (SKILL.md prints it when the MCP is missing, without reading it)
 C="$ROOT/cmp-new-project/reference/contract.json"
-if [ -f "$C" ]; then
-  install="$(jq -r '.mcp.install // empty' "$C")"
-  if [ -z "$install" ]; then bad cmp-new-project "reference/contract.json has no mcp.install (run scripts/sync-contract.sh)"
-  else
-    for f in README.md SKILL.md; do
-      grep -qF -- "$install" "$ROOT/cmp-new-project/$f" || bad cmp-new-project "$f does not show '$install'"
-    done
+install=""
+[ -f "$C" ] && install="$(jq -r '.mcp.install // empty' "$C")"
+[ -f "$C" ] && [ -z "$install" ] && bad cmp-new-project "reference/contract.json has no mcp.install (run scripts/sync-contract.sh)"
+for f in "$ROOT"/*-new-project/SKILL.md; do
+  [ -f "$f" ] || continue
+  d="$(basename "$(dirname "$f")")"
+  if [ -z "$install" ]; then
+    [ -f "$C" ] || bad "$d" "cannot check the MCP install command: cmp-new-project/reference/contract.json is missing"
+    continue
   fi
-fi
+  for g in README.md SKILL.md; do
+    if [ ! -f "$ROOT/$d/$g" ]; then bad "$d" "$g is missing"
+    else grep -qF -- "$install" "$ROOT/$d/$g" || bad "$d" "$g does not show '$install'"; fi
+  done
+done
 exit "$fail"
