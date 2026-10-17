@@ -54,7 +54,8 @@ in `[TearDown]`. Add EditMode tests for the pure game logic (scoring, difficulty
 ## ROADMAP.md
 
 Compass wrote `ROADMAP.md` from the plan. Build only the milestone you are asked for. When it is done, change its
-`- [ ]` to `- [x]` and add one line under it with what was built. Do not rewrite the other milestones.
+`- [ ]` to `- [x]` and add one line under it with what was built. Do not rewrite the other milestones. Make this
+change with the Edit tool, not `sed`/`awk` into a temporary file: leave no `*.tmp` files behind.
 
 ## Verify
 
