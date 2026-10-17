@@ -45,5 +45,16 @@ check "R8 README and SKILL.md with the pinned MCP command pass" test "$CODE" -eq
 skill cmp-new-project "name: cmp-new-project"; runc
 check "R8 SKILL.md without the MCP command fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: cmp-new-project: SKILL.md does not show" <<<"$2"' _ "$CODE" "$OUT"
 
+ukit() { # a complete unity-kit/
+  local d="$TMP/unity-kit"; mkdir -p "$d"
+  echo '{ "version": 1 }' > "$d/kit.json"; echo '{}' > "$d/settings.json"; echo '# unity-kit' > "$d/README.md"
+  echo '<!-- compass-unity-kit -->' > "$d/CLAUDE.md"; echo "UNITY='@UNITY@'" > "$d/compass-unity"
+  echo 'public static class CompassAutoPlay {}' > "$d/CompassAutoPlay.cs"
+}
+reset; ukit; rm "$TMP/unity-kit/compass-unity"; runc
+check "R9 unity-kit without compass-unity fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: unity-kit: compass-unity is missing" <<<"$2"' _ "$CODE" "$OUT"
+reset; ukit; runc
+check "R9 complete unity-kit passes" bash -c '[ "$1" -eq 0 ] && ! grep -q "FAIL: unity-kit" <<<"$2"' _ "$CODE" "$OUT"
+
 rm -rf "${TMP:?}"
 exit "$fail"
