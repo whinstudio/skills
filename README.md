@@ -18,6 +18,8 @@ with `/<skill-name>`.
 | Skill | What it does |
 |---|---|
 | [`cmp-new-project`](./cmp-new-project) | Generate a Compose Multiplatform (Kotlin Multiplatform) project from the terminal through the local cmpose MCP server (`@cmpose/mcp`), asking only four questions. |
+| [`backend-new-project`](./backend-new-project) | Generate a standalone Kotlin/Ktor backend (PostgreSQL, Docker-ready) through the same cmpose MCP server, asking only four questions, then verify the Gradle build and the Docker image. |
+| [`game-new-project`](./game-new-project) | Generate a Unity 6 mobile game (Android + iOS, 2D or 3D) through the same cmpose MCP server, asking only four questions, then build Android and the iOS simulator in the background. |
 | [`cmp-feature`](./cmp-feature) | Add a screen, feature module or data source to a generated app — the contract, domain, data and presentation layers, ViewModel, navigation destination and Koin wiring. |
 | [`cmp-design-to-code`](./cmp-design-to-code) | Build or adjust UI from a provided design (exported boards, mockup or screenshot) by measuring it, mapping every value to a theme token and checking the result against the design. |
 | [`cmp-code-rules`](./cmp-code-rules) | Rules for every Kotlin change in a generated project — layering, visibility, Multiplatform limits, Compose state, Koin annotations, resources, accessibility — plus a self-review checklist. |
@@ -34,8 +36,14 @@ with `/<skill-name>`.
 **Models.** Skills that write application code (`cmp-code-rules`, `cmp-feature`,
 `cmp-design-to-code`, `cmp-backend`) run on your session model. Mechanical skills run in their own subagent on
 Sonnet and return a short report (`cmp-gates`, `cmp-detekt`, `cmp-testing`, `cmp-maestro`);
-`cmp-commit`, `cmp-new-project` and `cmp-matrix-test` run on Sonnet. `scripts/check-skills.sh`
+`cmp-commit`, `cmp-new-project`, `backend-new-project`, `game-new-project` and `cmp-matrix-test` run on Sonnet. `scripts/check-skills.sh`
 enforces these rules.
+
+**cmpose MCP.** The three `*-new-project` skills need the cmpose MCP server. If it is not
+connected, the skill asks nothing and prints the install command:
+`claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.4.0`. All three show the same
+pinned command (from `cmp-new-project/reference/contract.json`); `scripts/check-skills.sh` keeps
+them in step.
 
 [`compass-kit`](./compass-kit) is not a skill but a kit that Compass installs into every project
 it generates. Its `kit.json` lists the skills it ships — `cmp-code-rules`, `cmp-feature`,
