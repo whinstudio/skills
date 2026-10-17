@@ -42,8 +42,15 @@ Read the sections that are there and build the game on them:
   fallback). No `UnityEngine.Input` legacy calls.
 - No `GameObject.Find`, `SendMessage` or reflection tricks.
 - Visuals come from the plan's palette and shape language, drawn in code: 2D uses sprites made at runtime
-  (`Texture2D` → `Sprite.Create`, simple shapes, solid colours); 3D uses primitives with a URP Lit material
-  (`Shader.Find("Universal Render Pipeline/Lit")`). Keep contrast readable.
+  (`Texture2D` → `Sprite.Create`, simple shapes, solid colours) with the default `SpriteRenderer` material; 3D uses
+  primitives. Keep contrast readable.
+- Materials: **never** call `Shader.Find` or `new Material(<Shader>)`. Unity strips every shader that no asset
+  references, so on the phone `Shader.Find` returns null: objects render magenta and `new Material(null)` throws
+  `ArgumentNullException`, while the Editor tests still pass. Compass installed three URP materials in
+  `Assets/_Project/Resources/CompassMaterials/`; start from them: `Resources.Load<Material>("CompassMaterials/Lit")`
+  for lit 3D, `"CompassMaterials/Unlit"` for flat colour and backgrounds, `"CompassMaterials/ParticlesUnlit"` for a
+  `ParticleSystemRenderer`. Tint with `new Material(template)` + `SetColor("_BaseColor", colour)`, or share one
+  material and use a `MaterialPropertyBlock`. Never edit those `.mat` files.
 - Sounds: Compass synthesized one WAV per sound event into `Assets/_Project/Resources/Audio/<event>.wav`; load
   them with `Resources.Load<AudioClip>("Audio/<event>")` and play them through one audio service. Never create
   audio files yourself.
