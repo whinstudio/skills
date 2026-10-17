@@ -1,0 +1,8 @@
+{
+  "packagePrefix": "com.example",
+  "outputDir": "~/StudioProjects",
+  "ide": "IntelliJ IDEA",
+  "openIde": true,
+  "autoBuild": true,
+  "autoDockerBuild": true
+}
