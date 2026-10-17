@@ -1,0 +1,10 @@
+{
+  "packagePrefix": "com.example",
+  "outputDir": "~/StudioProjects",
+  "render": "2d",
+  "minSdk": "25",
+  "iosVersion": "15.0",
+  "openUnity": true,
+  "autoBuildAndroid": true,
+  "autoBuildIos": true
+}
