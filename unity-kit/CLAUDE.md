@@ -16,6 +16,23 @@ art or audio files except the synthesized sounds in `Assets/_Project/Resources/A
   ones. Read two existing features before adding one.
 - Deep links: `DeepLinkRouter.Register(path, handler)` in the root scope; `menu` and `game` are reserved.
 
+## Template features
+
+`README.md` has one section for each feature this project was made with (between `<!-- cmpose:<flag> -->` markers).
+Read the sections that are there and build the game on them:
+
+- **Texts and languages:** no player-visible text in code. Every new text gets a key in your module's string
+  tables for every language the game ships, and is shown with `LocalizedText` or `ILocalizer.Get`.
+- **Ads:** show an interstitial at a natural break (after a game over; the pacer may skip it) and, where it fits the
+  game, one rewarded ad (e.g. continue once). No banner over the play area. While `CompassAutoPlay.Requested` is
+  true, show no interstitial or rewarded ad: it would stop the AutoPlayer.
+- **Premium and purchases:** keep the template's paywall and premium flow; premium players see no ads. While
+  `CompassAutoPlay.Requested` is true, do not open the paywall.
+- **Network and NET:** keep them; add network calls only if the plan asks for them.
+- **Leaderboards** (only if the section is there): submit the best score at game over and add a leaderboard
+  button to the menu.
+- **Save system** (only if the section is there): keep saved values, like the best score, with it.
+
 ## Hard rules
 
 - Build the game scene **in code**: a bootstrap `MonoBehaviour` in the existing game scene creates every object
