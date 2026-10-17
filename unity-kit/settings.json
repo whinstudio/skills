@@ -1,0 +1,10 @@
+{
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "600000",
+    "BASH_MAX_TIMEOUT_MS": "900000"
+  },
+  "permissions": {
+    "deny": ["WebFetch", "WebSearch", "Bash(curl:*)", "Bash(wget:*)", "Bash(python3:*)", "Bash(python:*)", "Bash(git push:*)"]
+  },
+  "attribution": { "commit": "", "pr": "", "sessionUrl": false }
+}
