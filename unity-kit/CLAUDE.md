@@ -16,6 +16,23 @@ art or audio files except the synthesized sounds in `Assets/_Project/Resources/A
   ones. Read two existing features before adding one.
 - Deep links: `DeepLinkRouter.Register(path, handler)` in the root scope; `menu` and `game` are reserved.
 
+## Template features
+
+`README.md` has one section for each feature this project was made with (between `<!-- cmpose:<flag> -->` markers).
+Read the sections that are there and build the game on them:
+
+- **Texts and languages:** no player-visible text in code. Every new text gets a key in your module's string
+  tables for every language the game ships, and is shown with `LocalizedText` or `ILocalizer.Get`.
+- **Ads:** show an interstitial at a natural break (after a game over; the pacer may skip it) and, where it fits the
+  game, one rewarded ad (e.g. continue once). No banner over the play area. While `CompassAutoPlay.Requested` is
+  true, show no interstitial or rewarded ad: it would stop the AutoPlayer.
+- **Premium and purchases:** keep the template's paywall and premium flow; premium players see no ads. While
+  `CompassAutoPlay.Requested` is true, do not open the paywall.
+- **Network and NET:** keep them; add network calls only if the plan asks for them.
+- **Leaderboards** (only if the section is there): submit the best score at game over and add a leaderboard
+  button to the menu.
+- **Save system** (only if the section is there): keep saved values, like the best score, with it.
+
 ## Hard rules
 
 - Build the game scene **in code**: a bootstrap `MonoBehaviour` in the existing game scene creates every object
@@ -25,8 +42,15 @@ art or audio files except the synthesized sounds in `Assets/_Project/Resources/A
   fallback). No `UnityEngine.Input` legacy calls.
 - No `GameObject.Find`, `SendMessage` or reflection tricks.
 - Visuals come from the plan's palette and shape language, drawn in code: 2D uses sprites made at runtime
-  (`Texture2D` → `Sprite.Create`, simple shapes, solid colours); 3D uses primitives with a URP Lit material
-  (`Shader.Find("Universal Render Pipeline/Lit")`). Keep contrast readable.
+  (`Texture2D` → `Sprite.Create`, simple shapes, solid colours) with the default `SpriteRenderer` material; 3D uses
+  primitives. Keep contrast readable.
+- Materials: **never** call `Shader.Find` or `new Material(<Shader>)`. Unity strips every shader that no asset
+  references, so on the phone `Shader.Find` returns null: objects render magenta and `new Material(null)` throws
+  `ArgumentNullException`, while the Editor tests still pass. Compass installed three URP materials in
+  `Assets/_Project/Resources/CompassMaterials/`; start from them: `Resources.Load<Material>("CompassMaterials/Lit")`
+  for lit 3D, `"CompassMaterials/Unlit"` for flat colour and backgrounds, `"CompassMaterials/ParticlesUnlit"` for a
+  `ParticleSystemRenderer`. Tint with `new Material(template)` + `SetColor("_BaseColor", colour)`, or share one
+  material and use a `MaterialPropertyBlock`. Never edit those `.mat` files.
 - Sounds: Compass synthesized one WAV per sound event into `Assets/_Project/Resources/Audio/<event>.wav`; load
   them with `Resources.Load<AudioClip>("Audio/<event>")` and play them through one audio service. Never create
   audio files yourself.
