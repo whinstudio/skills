@@ -23,15 +23,54 @@ Read the sections that are there and build the game on them:
 
 - **Texts and languages:** no player-visible text in code. Every new text gets a key in your module's string
   tables for every language the game ships, and is shown with `LocalizedText` or `ILocalizer.Get`.
-- **Ads:** show an interstitial at a natural break (after a game over; the pacer may skip it) and, where it fits the
-  game, one rewarded ad (e.g. continue once). No banner over the play area. While `CompassAutoPlay.Requested` is
+- **Ads:** show an interstitial at a natural break: after the shell's game-over or level card returns (the shell does
+  not show it; the pacer may skip it). The rewarded ad is the
+  shell's Continue (below); do not add another. No banner over the play area. While `CompassAutoPlay.Requested` is
   true, show no interstitial or rewarded ad: it would stop the AutoPlayer.
 - **Premium and purchases:** keep the template's paywall and premium flow; premium players see no ads. While
   `CompassAutoPlay.Requested` is true, do not open the paywall.
 - **Network and NET:** keep them; add network calls only if the plan asks for them.
-- **Leaderboards** (only if the section is there): submit the best score at game over and add a leaderboard
-  button to the menu.
+- **Leaderboards** (only if the section is there): submit the best score at game over and add one leaderboard
+  button to the menu (`KitFactory.Button(..., KitButtonVariant.Icon)`, opening `ShowLeaderboardAsync`). That button
+  is the only change the menu gets.
 - **Save system** (only if the section is there): keep saved values, like the best score, with it.
+
+## Screens, shell and world
+
+The template owns the look. Read the README sections "Look: style family, fonts and the UI kit", "Colours and
+themes", "Game shell" and "Game world: presentation and juice" before writing UI or visuals.
+
+- **Screens:** menu, settings, about, paywall and pause are the template's. Do not rebuild, restyle or replace them.
+- **In-game UI only through `IGameShell`** (`Kturker.UnityBase.Features.Shell.GameShell`, injected into your
+  presenter). Never draw your own HUD, score text, start hint or end cards.
+  - A game that needs a screen of its own (a shop, upgrades, a level map) builds it only with the kit
+    (`KitFactory.Button`, `.Card`, `.Sheet`, … in `Core/Presentation/Kit`, shown with `KitScreens.Show`, bound with
+    `uiBinder.BindTree`), never with plain uGUI parts. Every text gets a `ThemedText`, every image a `ThemedGraphic`.
+  - Use the plan's flow: call `Begin(ShellMode.Endless)` or `Begin(ShellMode.Levels)` first.
+  - During play: `SetScore`, `SetBest`, `SetCounter`, `Toast(key)` (e.g. `"shell.perfect"`),
+    `ShowStartHint` / `HideStartHint`.
+  - Endless: `await ShowGameOver(score, best, newBest)` returns an `EndChoice`: `Retry` starts a new run, `Menu`
+    loads the menu, `Continue` revives the player.
+  - Levels: `CurrentLevel`; on a win `CompleteLevel(level, stars)` and `ShowLevelComplete(level, stars, reward)`
+    (`Next` calls `Begin` for the next level, `Menu`); on a loss `ShowLevelFailed(level)` (`Retry`, `Continue`,
+    `Menu`). Levels needs the save system: without it the Editor throws `InvalidOperationException`.
+  - Continue is offered only when a rewarded ad is ready or the player is premium, once per run; the shell decides.
+    Do not count it yourself. The AutoPlay ad rule above still holds.
+- **World objects** (namespace `Kturker.UnityBase.Core.Render`): shapes from `RoundedMesh.Box(size, radius)`,
+  `.Cylinder(...)`, `.Capsule(...)`; materials from `WorldPalette.Material(index, RenderMaterials.SoftGloss)` or
+  `WorldPalette.Material(colour, preset)` with a theme role colour (`theme.Current.Get(ThemeRole.Primary)`). Presets:
+  `Lit`, `Matte`, `SoftGloss`, `Glow`, `Unlit`, `ParticlesUnlit`; load one directly with
+  `RenderMaterials.Load(preset)` or `Resources.Load<Material>("Materials/<name>")`. 2D games use the same colours
+  and materials; sprites made at runtime (`Texture2D` → `Sprite.Create`) are fine for shape only.
+- **No hex colours in game code:** no colour constants at all. Every colour comes from `WorldPalette.Color(index)`
+  (`WorldPalette.Count` entries) or a theme role. Keep contrast readable.
+- **Every player action gets feedback:** a juice helper (`CameraShake.Shake(strength)`,
+  `SquashStretch.Play(transform)`, `HitFlash.Flash(renderer)`, `ParticlePresets.Burst(position, colour)`,
+  `ParticlePresets.Confetti(position)`, `FloatingText.Spawn(position, text, colour)`) + an `IUiFeedback` haptic
+  (`Click()`, `Success()`, `Failure()`, `Impact(HapticStrength)`) + a sound.
+- **Keep the presentation rig:** `Assets/_Project/Render/GameRig.prefab` (camera, key/fill/rim lights, the family's
+  background, post-processing volume) and `ThemeRig`. Tune them from code if the game needs it; never delete or
+  replace them.
 
 ## Hard rules
 
@@ -41,16 +80,10 @@ Read the sections that are there and build the game on them:
 - Input is the Input System (`UnityEngine.InputSystem`), touch first (`Touchscreen`, with `Mouse` as the editor
   fallback). No `UnityEngine.Input` legacy calls.
 - No `GameObject.Find`, `SendMessage` or reflection tricks.
-- Visuals come from the plan's palette and shape language, drawn in code: 2D uses sprites made at runtime
-  (`Texture2D` → `Sprite.Create`, simple shapes, solid colours) with the default `SpriteRenderer` material; 3D uses
-  primitives. Keep contrast readable.
 - Materials: **never** call `Shader.Find` or `new Material(<Shader>)`. Unity strips every shader that no asset
   references, so on the phone `Shader.Find` returns null: objects render magenta and `new Material(null)` throws
-  `ArgumentNullException`, while the Editor tests still pass. Compass installed three URP materials in
-  `Assets/_Project/Resources/CompassMaterials/`; start from them: `Resources.Load<Material>("CompassMaterials/Lit")`
-  for lit 3D, `"CompassMaterials/Unlit"` for flat colour and backgrounds, `"CompassMaterials/ParticlesUnlit"` for a
-  `ParticleSystemRenderer`. Tint with `new Material(template)` + `SetColor("_BaseColor", colour)`, or share one
-  material and use a `MaterialPropertyBlock`. Never edit those `.mat` files.
+  `ArgumentNullException`, while the Editor tests still pass. Get materials only from `WorldPalette` /
+  `RenderMaterials` (above). Never edit the template's `.mat` files.
 - Sounds: Compass synthesized one WAV per sound event into `Assets/_Project/Resources/Audio/<event>.wav`; load
   them with `Resources.Load<AudioClip>("Audio/<event>")` and play them through one audio service. Never create
   audio files yourself.

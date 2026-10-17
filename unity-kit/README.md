@@ -9,7 +9,9 @@ Compass's rules for the code step of a prompt-made Unity game (spec: Compass
 | `settings.json` | `.claude/settings.json` | long Bash timeout for Unity, no network |
 | `compass-unity` | `./compass-unity` (executable) | `@UNITY@` is replaced with the Unity editor path |
 | `CompassAutoPlay.cs` | `Assets/_Project/Compass/CompassAutoPlay.cs` | the auto-play switch; do not edit in projects |
-| `materials/*.mat` | `Assets/_Project/Resources/CompassMaterials/` | URP Lit, Unlit, Particles/Unlit (copied from URP's `Runtime/Materials`); the only way game code gets a shader — `Shader.Find` returns null on device |
 
-`kit.json` `version` must match Compass's `UnityKit.VERSION` (2). Edit here, not in Compass: Compass pulls this repo
+Materials, the UI kit, the game shell, the presentation rig and the juice helpers come from the Unity game
+template itself (since v3); the kit only tells the agent to use them.
+
+`kit.json` `version` must match Compass's `UnityKit.VERSION` (3). Edit here, not in Compass: Compass pulls this repo
 before every run.
