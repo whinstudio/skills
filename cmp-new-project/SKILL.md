@@ -36,7 +36,7 @@ stale skill is visible — see *Maintenance*.
      `reference/contract.json` → `mcp.install`), then restart Claude Code (`/exit`, then `claude`)
      and ask again:
 
-         claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.5.0
+         claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.5.1
 
    - it needs Node.js 20+ and git: run `scripts/doctor.sh` and report `node20` and `git` (if it
      cannot run, just say so).
