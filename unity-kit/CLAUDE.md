@@ -2,8 +2,9 @@
 # Compass rules for this Unity game
 
 You write the game described in the prompt into this Unity project. Compass made the project from the blank
-template, installed these rules, imported it once in Unity and committed it. There is no internet and there are no
-art or audio files except the synthesized sounds in `Assets/_Project/Resources/Audio`.
+template, installed these rules, imported it once in Unity and committed it. There is no internet. Art files exist
+only if Compass staged Kenney packs in `.compass/art/` (see Art below); sounds are synthesized into
+`Assets/_Project/Resources/Audio`.
 
 ## The template
 
@@ -72,6 +73,35 @@ themes", "Game shell" and "Game world: presentation and juice" before writing UI
   background, post-processing volume) and `ThemeRig`. Tune them from code if the game needs it; never delete or
   replace them.
 
+## Art (only if .compass/art/ exists)
+
+If there is no `.compass/art/` folder, skip this section: the game world is built from shapes as above. If it is
+there, Compass unpacked the CC0 Kenney 2D packs chosen for this game into `.compass/art/<slug>/`, and the game
+world is drawn with them.
+
+- **Read `.compass/art/INDEX.md` first:** for each pack it lists the tile size, the path of the overview image and
+  every PNG. Look at the overview image to pick the sprites.
+- **Copy only the files you use**, with `cp`, into `Assets/_Project/Resources/Art/<slug>/` (`mkdir -p` the folder
+  first), keeping the file names. Do not copy whole packs. Load them with `Resources.Load<Sprite>("Art/<slug>/<name>")`
+  (no `.png`). `Assets/_Project/Compass/Editor/CompassArtImporter.cs` imports them as sprites with the pack's
+  pixels per unit and filtering; do not change their import settings or write their `.meta` files.
+- **Never edit, recolour, crop, combine or generate images**, and never draw sprites with `Texture2D` in place of a
+  pack sprite. Compass's licence gate checks every image in the project against the staged packs: a file that was
+  not copied from `.compass/art/` or was changed fails it.
+- **The play area looks like the pack** (the rig is still kept, as above, and tuned from code):
+  - Make the `GameRig` camera orthographic and set `orthographicSize` so pixels land exactly on screen pixels:
+    `Screen.height / (2f * pixelsPerUnit * zoom)` with a whole-number `zoom` (`pixelsPerUnit` is the pack's tile
+    size from `INDEX.md`). Recompute it when the screen size changes.
+  - Turn the `GameRig` post-processing volume off in the game scene (no bloom, no anti-aliasing blur).
+  - Sprites keep their own colours: leave `SpriteRenderer.color` white and do not apply `WorldPalette` colours or
+    materials to them. This is the only exception to "no colour constants". `HitFlash` and particles may still use
+    palette colours.
+  - Menus, the shell's HUD and its cards stay in the theme; Compass derives the theme colours from the pack.
+- **Physics:** tiles the player cannot walk through get a `BoxCollider2D`; the player gets a `Rigidbody2D` (not
+  kinematic, `gravityScale` 0 unless the game has gravity) and a collider. Move it through the rigidbody.
+- **Animation is code:** a walking character bobs with `SquashStretch` and turns with `SpriteRenderer.flipX` when
+  its direction changes; do not look for or make sprite sheets that the pack does not have.
+
 ## Hard rules
 
 - Build the game scene **in code**: a bootstrap `MonoBehaviour` in the existing game scene creates every object
@@ -87,7 +117,9 @@ themes", "Game shell" and "Game world: presentation and juice" before writing UI
 - Sounds: Compass synthesized one WAV per sound event into `Assets/_Project/Resources/Audio/<event>.wav`; load
   them with `Resources.Load<AudioClip>("Audio/<event>")` and play them through one audio service. Never create
   audio files yourself.
-- Do not touch `Assets/_Project/Compass/CompassAutoPlay.cs`, `compass-unity`, `.claude/` or `keystore*`.
+- Do not touch `Assets/_Project/Compass/CompassAutoPlay.cs`, `Assets/_Project/Compass/Editor/CompassArtImporter.cs`,
+  `Assets/_Project/Compass/compass-art.json`, `.compass/` (only read and copy from it), `compass-unity`, `.claude/`
+  or `keystore*`.
 
 ## AutoPlayer (required)
 

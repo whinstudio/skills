@@ -32,15 +32,15 @@ if [ -f "$KIT" ]; then
     [ -f "$ROOT/$s/SKILL.md" ] || bad "$s" "listed in kit.json but $s/SKILL.md is missing"
   done < <(jq -r '.skills[] | if type == "string" then . else .name end' "$KIT")
 fi
-# R9: unity-kit (Compass's game code step) ships its six files; Compass refuses the kit otherwise.
+# R9: unity-kit (Compass's game code step) ships its seven files; Compass refuses the kit otherwise.
 UK="$ROOT/unity-kit"
 if [ -d "$UK" ]; then
-  for f in kit.json CLAUDE.md settings.json compass-unity CompassAutoPlay.cs README.md; do
+  for f in kit.json CLAUDE.md settings.json compass-unity CompassAutoPlay.cs CompassArtImporter.cs README.md; do
     [ -f "$UK/$f" ] || bad unity-kit "$f is missing"
   done
   [ -f "$UK/compass-unity" ] && { grep -qF '@UNITY@' "$UK/compass-unity" || bad unity-kit "compass-unity has no @UNITY@ placeholder"; }
   [ -f "$UK/CLAUDE.md" ] && { grep -qF '<!-- compass-unity-kit -->' "$UK/CLAUDE.md" || bad unity-kit "CLAUDE.md has no compass-unity-kit marker"; }
-  [ -f "$UK/kit.json" ] && { [ "$(jq -r '.version' "$UK/kit.json")" = 3 ] || bad unity-kit "kit.json version must be 3"; }
+  [ -f "$UK/kit.json" ] && { [ "$(jq -r '.version' "$UK/kit.json")" = 4 ] || bad unity-kit "kit.json version must be 4"; }
   # settings.json denies python on purpose; every other file must not suggest it.
   grep -rqI --exclude=settings.json 'python' "$UK" 2>/dev/null && bad unity-kit "mentions python (the code step has no interpreter)"
 fi

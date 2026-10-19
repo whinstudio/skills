@@ -65,9 +65,9 @@ check "R8 *-new-project skill without cmp-new-project's contract fails" bash -c 
 
 ukit() { # a complete unity-kit/
   local d="$TMP/unity-kit"; mkdir -p "$d"
-  echo '{ "version": 1 }' > "$d/kit.json"; echo '{}' > "$d/settings.json"; echo '# unity-kit' > "$d/README.md"
+  echo '{ "version": 4 }' > "$d/kit.json"; echo '{}' > "$d/settings.json"; echo '# unity-kit' > "$d/README.md"
   echo '<!-- compass-unity-kit -->' > "$d/CLAUDE.md"; echo "UNITY='@UNITY@'" > "$d/compass-unity"
-  echo 'public static class CompassAutoPlay {}' > "$d/CompassAutoPlay.cs"
+  echo 'public static class CompassAutoPlay {}' > "$d/CompassAutoPlay.cs"; echo 'public class CompassArtImporter {}' > "$d/CompassArtImporter.cs"
 }
 reset; ukit; rm "$TMP/unity-kit/compass-unity"; runc
 check "R9 unity-kit without compass-unity fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: unity-kit: compass-unity is missing" <<<"$2"' _ "$CODE" "$OUT"
