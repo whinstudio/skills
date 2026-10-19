@@ -14,5 +14,5 @@ the private cmpose release-tools repo) and reports the result with screenshots.
 
 ## Usage
 
-`/cmp-matrix-test` — or ask "matris testini koş", "run the generator matrix on TURKER",
+`/cmp-matrix-test` — or ask "matris testini koş", "run the generator matrix on develop",
 "quick smoke". Direct: `bash scripts/run.sh [--ref <tag|branch> | --dir <path>] [--build-only]`.
