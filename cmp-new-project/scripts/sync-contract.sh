@@ -103,7 +103,7 @@ function buildContract() {
     mcp: {
       package: '@cmpose/mcp',
       version: core.version,
-      install: `claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@${core.version}`
+      install: `claude mcp add cmpose -- npx -y @cmpose/mcp@${core.version}`
     },
     // STATIC fallback values. At runtime the skill prefers cmp_describe's contract.limits.
     limits: {

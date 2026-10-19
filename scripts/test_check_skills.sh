@@ -36,16 +36,16 @@ DOMAIN="cmpose"".dev"   # assembled: this file must not hold the literal
 reset; printf 'see %s\n' "$DOMAIN" > "$TMP/a/notes.md"; runc
 check "R7 the old domain anywhere fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: domain: a/notes.md:1:" <<<"$2"' _ "$CODE" "$OUT"
 reset; mkdir -p "$TMP/cmp-new-project/reference"; skill cmp-new-project "name: cmp-new-project"
-echo 'install: claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@9.9.9' >> "$TMP/cmp-new-project/SKILL.md"
-echo '{"mcp":{"install":"claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@9.9.9"}}' > "$TMP/cmp-new-project/reference/contract.json"
-echo 'install: claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@1.0.0' > "$TMP/cmp-new-project/README.md"; runc
+echo 'install: claude mcp add cmpose -- npx -y @cmpose/mcp@9.9.9' >> "$TMP/cmp-new-project/SKILL.md"
+echo '{"mcp":{"install":"claude mcp add cmpose -- npx -y @cmpose/mcp@9.9.9"}}' > "$TMP/cmp-new-project/reference/contract.json"
+echo 'install: claude mcp add cmpose -- npx -y @cmpose/mcp@1.0.0' > "$TMP/cmp-new-project/README.md"; runc
 check "R8 README with another MCP version fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: cmp-new-project: README.md does not show" <<<"$2"' _ "$CODE" "$OUT"
-echo 'install: claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@9.9.9' > "$TMP/cmp-new-project/README.md"; runc
+echo 'install: claude mcp add cmpose -- npx -y @cmpose/mcp@9.9.9' > "$TMP/cmp-new-project/README.md"; runc
 check "R8 README and SKILL.md with the pinned MCP command pass" test "$CODE" -eq 0
 skill cmp-new-project "name: cmp-new-project"; runc
 check "R8 SKILL.md without the MCP command fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: cmp-new-project: SKILL.md does not show" <<<"$2"' _ "$CODE" "$OUT"
 
-INSTALL='claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@9.9.9'
+INSTALL='claude mcp add cmpose -- npx -y @cmpose/mcp@9.9.9'
 npskill() { # $1 = *-new-project folder; SKILL.md and README.md show the pinned MCP command
   skill "$1" "name: $1" "model: sonnet" "effort: medium"
   echo "install: $INSTALL" >> "$TMP/$1/SKILL.md"; echo "install: $INSTALL" > "$TMP/$1/README.md"
@@ -54,7 +54,7 @@ reset; mkdir -p "$TMP/cmp-new-project/reference"; npskill cmp-new-project
 echo "{\"mcp\":{\"install\":\"$INSTALL\"}}" > "$TMP/cmp-new-project/reference/contract.json"
 npskill game-new-project; npskill backend-new-project; runc
 check "R8 *-new-project skills with the pinned MCP command pass" test "$CODE" -eq 0
-echo 'install: claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@1.0.0' > "$TMP/game-new-project/README.md"; runc
+echo 'install: claude mcp add cmpose -- npx -y @cmpose/mcp@1.0.0' > "$TMP/game-new-project/README.md"; runc
 check "R8 game-new-project README with another MCP version fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: game-new-project: README.md does not show '"'"'$3'"'"'" <<<"$2"' _ "$CODE" "$OUT" "$INSTALL"
 rm "$TMP/game-new-project/README.md"; runc
 check "R8 *-new-project skill without a README fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: game-new-project: README.md is missing" <<<"$2"' _ "$CODE" "$OUT"

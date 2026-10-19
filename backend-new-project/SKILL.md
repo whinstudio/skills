@@ -34,7 +34,7 @@ There is no static contract copy: the rules are read from `backend_describe` at 
    - the generator runs locally as an MCP server; add it once with this command, then restart Claude
      Code (`/exit`, then `claude`) and ask again:
 
-         claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.5.2
+         claude mcp add cmpose -- npx -y @cmpose/mcp@0.5.3
 
    - it needs Node.js 20+ and git: run `scripts/doctor.sh` and report `node20` and `git` (if it
      cannot run, just say so).
@@ -49,10 +49,11 @@ There is no static contract copy: the rules are read from `backend_describe` at 
 
 ## 1. Auto-defaults — DO NOT ASK these (keep the form short)
 - **Sharing → from the request ONLY, NEVER asked.** Turn it on when the request mentions sharing
-  records between users: e.g. paylaşım, paylaşmak, davet, aile, ekip, takım, ortak liste, üyeler,
-  roller / sharing, share with, invite, family, team, shared list, members, roles. Otherwise off
-  (`options.sharing.default`). Show it in the confirmation with its meaning: "records can be shared
-  with other users: spaces, members (viewer / editor / owner), invitation links".
+  records between users: e.g. paylaşım, paylaşmak, paylaşımlı, ortak, davet, aile, ekip, takım,
+  ortak liste, üyeler, roller / sharing, share with, shared, invite, family, team, shared list,
+  members, roles. Otherwise off (`options.sharing.default`). Show it in the confirmation with its
+  meaning: "records can be shared with other users: spaces, members (viewer / editor / owner),
+  invitation links".
 - **Template → the pinned `template`** of `backend_describe`. Never pass `templateRef` unless the user
   asks for a specific tag.
 
