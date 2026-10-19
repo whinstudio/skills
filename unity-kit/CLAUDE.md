@@ -42,6 +42,7 @@ The template owns the look. Read the README sections "Look: style family, fonts 
 themes", "Game shell" and "Game world: presentation and juice" before writing UI or visuals.
 
 - **Screens:** menu, settings, about, paywall and pause are the template's. Do not rebuild, restyle or replace them.
+  Menus and dialogs may wear the art pack's UI skin and the game's logo; Compass sets them. Never restyle them.
 - **In-game UI only through `IGameShell`** (`Kturker.UnityBase.Features.Shell.GameShell`, injected into your
   presenter). Never draw your own HUD, score text, start hint or end cards.
   - A game that needs a screen of its own (a shop, upgrades, a level map) builds it only with the kit
@@ -97,6 +98,8 @@ world is drawn with them.
     materials to them. This is the only exception to "no colour constants". `HitFlash` and particles may still use
     palette colours.
   - Menus, the shell's HUD and its cards stay in the theme; Compass derives the theme colours from the pack.
+  - The menu background is rendered from your game scene with every Canvas hidden, 3 seconds after the AutoPlayer
+    starts: the world must be on screen by then.
 - **Physics:** tiles the player cannot walk through get a `BoxCollider2D`; the player gets a `Rigidbody2D` (not
   kinematic, `gravityScale` 0 unless the game has gravity) and a collider. Move it through the rigidbody.
 - **Animation is code:** a walking character bobs with `SquashStretch` and turns with `SpriteRenderer.flipX` when
@@ -117,9 +120,11 @@ world is drawn with them.
 - Sounds: Compass synthesized one WAV per sound event into `Assets/_Project/Resources/Audio/<event>.wav`; load
   them with `Resources.Load<AudioClip>("Audio/<event>")` and play them through one audio service. Never create
   audio files yourself.
-- Do not touch `Assets/_Project/Compass/CompassAutoPlay.cs`, `Assets/_Project/Compass/Editor/CompassArtImporter.cs`,
-  `Assets/_Project/Compass/compass-art.json`, `.compass/` (only read and copy from it), `compass-unity`, `.claude/`
-  or `keystore*`.
+- Do not touch `Assets/_Project/Compass/` (its `Editor/`, `Resources/` and JSON files included),
+  `Assets/_Project/Resources/Branding/`, `Assets/_Project/Branding/`, `branding/`,
+  `Assets/_Project/Tests/PlayMode/Compass/`, the UI pack folders of `Assets/_Project/Compass/Resources/GameSkin.json`
+  (`Assets/_Project/Resources/Art/<pack>/` for `ui.pack` and every pack its sprite paths name), `.compass/` (only read
+  and copy from it), `compass-unity`, `.claude/` or `keystore*`.
 
 ## AutoPlayer (required)
 
