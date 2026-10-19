@@ -21,7 +21,7 @@ fi
 
 # 2. git init + initial commit
 if [ ! -d .git ]; then
-  git init -q -b main
+  git init -q -b develop
   git add -A
   NAME="$(git config user.name 2>/dev/null || echo cmpose)"
   EMAIL="$(git config user.email 2>/dev/null || echo noreply@example.com)"

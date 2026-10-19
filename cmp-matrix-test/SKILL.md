@@ -51,7 +51,7 @@ by the backend and mention the difference in the report.
 
 ## 3. Pick the arguments from the request
 
-- A tag or branch of CmpTemplate ("template-2026.09.28", "TURKER") → `--ref <it>`. Templates
+- A tag or branch of CmpTemplate ("template-2026.09.28", "develop") → `--ref <it>`. Templates
   from before the test-infrastructure release fail the "unit tests (Android host + iOS
   simulator) incl. Koin graph" check of every variant that generates, by design: report them as
   expected, not as product failures.
