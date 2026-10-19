@@ -23,5 +23,5 @@ before every run.
 
 ## Versions
 
-- v4: `CompassArtImporter`, Art rules in `CLAUDE.md`; Compass ≥ <Task 9 version> required.
+- v4: `CompassArtImporter`, Art rules in `CLAUDE.md`; requires Compass with unity-kit v4 support (whinstudio/Compass#23).
 - v3: materials, UI kit, game shell, presentation rig and juice come from the template.
