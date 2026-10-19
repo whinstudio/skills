@@ -17,7 +17,7 @@ description, a local runner with an embedded PostgreSQL and a `deploy/` folder
 - [Claude Code](https://code.claude.com)
 - The cmpose MCP server, added once (Node.js 20+ and git):
 
-      claude mcp add cmpose -- npx --prefer-offline -y @cmpose/mcp@0.5.2
+      claude mcp add cmpose -- npx -y @cmpose/mcp@0.5.3
 
   then restart Claude Code. Without it the skill stops and prints this command.
 - Internet access once, for the first generation (it downloads the pinned template)
@@ -48,8 +48,8 @@ Invoke the skill and answer four prompts (asked one at a time):
 4. **Output directory** — default `~/StudioProjects` (the project goes to `~/StudioProjects/<project>`)
 
 **Sharing** is never asked: it is on when your request mentions sharing between users
-(sharing, invite, family, team, members, roles / paylaşım, davet, aile, ekip, üyeler,
-roller), off otherwise. It is shown on the confirmation screen, where you can change it.
+(sharing, shared, invite, family, team, members, roles / paylaşım, paylaşımlı, ortak, davet,
+aile, ekip, üyeler, roller), off otherwise. It is shown on the confirmation screen, where you can change it.
 Sharing adds spaces, roles (viewer, editor, owner) and invitation links.
 
 Examples:
