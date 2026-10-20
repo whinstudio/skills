@@ -47,6 +47,27 @@ If the app does not share data between users, set it to `false`: the space switc
 hidden and every record lives in the user's personal space. The server, its routes and checks stay exactly as
 below; the personal space is still a space.
 
+## Quotas and invites
+
+The server caps new writes; the limits come from the environment (`server/deploy/.env.example`):
+`MAX_STORAGE_BYTES_PER_USER` (default 100 MB; a file counts against its space's owner, also when an editor uploaded
+it), `MAX_SPACES_PER_USER` (20, the spaces a user owns besides the personal one), `MAX_MEMBERS_PER_SPACE` (50, owner
+included, checked when an invite is accepted) and `MAX_PENDING_INVITES_PER_SPACE` (20, a space's valid invites). `0`
+turns one off; lowering one deletes nothing, it only refuses new writes. A refused write answers 409
+`QUOTA_EXCEEDED` with `quota` = `storage` | `spaces` | `members` | `invites`; the limit itself is not sent.
+
+- A new record type's image goes through `POST /api/v1/files`, so its upload can be refused with `QUOTA_EXCEEDED`
+  (`storage`); the app shows that as full storage (step 9), not as a failure.
+- A write you add that a quota counts checks it as `server/SECURITY-CHECKLIST.md` says: in the same locked
+  transaction as the write, failing with `quotaExceeded(...)`.
+
+The invite routes are the template's (`server/.../sharing`); the app calls them and never re-implements them. An
+OWNER lists a space's valid invites with `GET /api/v1/spaces/{id}/invites` (newest first, at most 200, not paged;
+`id`, `role`, `createdAt`, `expiresAt`, never the token) and revokes one with
+`DELETE /api/v1/spaces/{id}/invites/{inviteId}` (204, also when called again; 409 `INVITE_USED` once it was used;
+another space's invite or an unknown id is 404). Creating an invite answers with its `id` too, the one the DELETE
+takes. Accepting a revoked invite answers 410 `INVITE_REVOKED`, and its preview's state is `revoked`.
+
 ## The pattern
 
 This project has no sample feature. Copy the shape of `server/.../files/`: `FileRepository.kt` (the Exposed table
@@ -454,6 +475,8 @@ internal class KtorTripRepository(private val client: HttpClient) : BaseReposito
   server still enforces it; the UI only avoids offering what will fail.
 - A 404 after a space switch or a removal means the space is gone for this user: call `selectedSpace.refresh()`
   (it falls back to the personal space) instead of showing an error.
+- A 409 `QUOTA_EXCEEDED` on a create or an upload is a full quota, not a bug: say which one (by `quota`, a string in
+  `core/multilang`) and keep what the user entered.
 
 ## 10. Screen
 
