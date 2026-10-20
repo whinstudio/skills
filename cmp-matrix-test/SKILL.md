@@ -39,8 +39,12 @@ Snapshot (backend release): 10 variants — `Showcase`, `ShowcaseMod`, `BlankMin
 and `BlankAds` came with the monetization release, for the in-app purchases and ads flags; Room is on in
 `BlankFull`, `BlankAds` and `BlankPurchases`, which has it alone: no custom module, theming and
 multi-language off; `BlankBackend` is the only variant with the backend, next to a custom module and with detekt off, so it has no detekt rows). A full
-run has 188 checks, five of them `Room schema unchanged by the build` (both showcases and the three Room
-variants). `BlankBackend` adds the server's tests (`:server:test`), a sign-in screen check without Firebase
+run had 188 checks before the server moved to the backend template (re-measure it on the first run with both
+pins), five of them `Room schema unchanged by the build` (both showcases and the three Room
+variants). `BlankBackend`'s `server/` comes from the cmpose backend template, the smoke's second pin, and
+generating it builds the server's Docker image. It adds the server's tests (`:server:test`), `core/api`'s
+`ApiContractTest` against the server's API description (`contract-test-missing` when it did not run or was
+skipped), a sign-in screen check without Firebase
 config files, the invite deep link (`invite/abc` instead of `settings`) and a local server run
 (`:server:runLocal`, `GET /health`, stop). The
 `--build-only` count was not re-measured for this release (69 at the monetization release, before Room);
@@ -62,13 +66,16 @@ by the backend and mention the difference in the report.
   design: its sources predate the compass-kit formatting. Report those as expected, not as
   product failures.
 - A template directory (e.g. the upstream checkout) → `--dir <path>`.
+- A backend template tag → `--backend-ref <tag>`; a local backend template checkout (an unreleased server
+  change) → `--backend-dir <path>`. Not both. Neither → the installed core's backend pin.
 - "quick", "sadece build", "hızlı" → add `--build-only` (skips the emulator/simulator runs).
 - Nothing given → no arguments: the backend's pinned template, full run.
 
 Tell the user the expected duration (full ≈ 55–60 min, `--build-only` ≈ 5–10 min).
 
 A full run needs `ffmpeg` (the dark-screenshot check); without it the script stops with a
-`PREREQ:` line. `--build-only` does not need it.
+`PREREQ:` line. `--build-only` does not need it. Every run needs a running Docker (the backend
+variant's server image); without it the script stops with a `PREREQ:` line.
 
 The compass-kit detekt check needs a local clone of this skills repo: `CMP_SKILLS_DIR`, default
 `../../skills` relative to the backend checkout. If `compass-kit/detekt.yml` is missing there,
