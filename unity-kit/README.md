@@ -32,8 +32,9 @@ background colour only.
 
 `CompassMenuShotTests` is `[Explicit]`, so `./compass-unity play` skips it; Compass runs it alone with
 `-testCategory CompassMenuShot -compassShotOut <png> -compassShotSize <w>x<h>` (without `-nographics`). It finds
-`CompassAutoPlay` by name because the PlayMode test assembly cannot reference Assembly-CSharp, and scales an
-orthographic camera from `Screen.height` to the shot's height, as the pixel-perfect rule in `CLAUDE.md` sizes it.
+`CompassAutoPlay` by name because the PlayMode test assembly cannot reference Assembly-CSharp. It draws the camera as
+the game sized it (no rescale: games fit their zoom to `Screen`) three times, 2 s apart from 4 s after the game scene
+opens, and keeps the frame with the most colours, so a floor change or fade does not end up as the background.
 
 `kit.json` `version` must be one Compass supports (3, 4 or 5). Edit here, not in Compass: Compass pulls this repo
 before every run.
