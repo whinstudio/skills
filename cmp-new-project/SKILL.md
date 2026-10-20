@@ -36,7 +36,7 @@ stale skill is visible — see *Maintenance*.
      `reference/contract.json` → `mcp.install`), then restart Claude Code (`/exit`, then `claude`)
      and ask again:
 
-         claude mcp add cmpose -- npx -y @cmpose/mcp@0.5.3
+         claude mcp add cmpose -- npx -y @cmpose/mcp@0.6.0
 
    - it needs Node.js 20+ and git: run `scripts/doctor.sh` and report `node20` and `git` (if it
      cannot run, just say so).
@@ -86,9 +86,9 @@ needed, or overrides them up front in their request.
   or sharing data between users** (`keywordMap.backend`); an app that only shows accounts or a share
   button for plain text does not need it; if unsure, leave it off and ask on the confirmation
   screen. `backend` is blank-only (it switches the template to blank) and implies `multiLang` +
-  `network` (and so `dataStore`). It adds `server/` (Ktor), `core/api`, `core/auth`,
-  `feature/account` and `feature/sharing`, so `account` and `sharing` are reserved module names (see
-  `reference/payload.md` → *Backend*).
+  `network` (and so `dataStore`). It adds `server/` (the cmpose backend template's Ktor server, with
+  sharing, as an included build), `core/api`, `core/auth`, `feature/account` and `feature/sharing`, so
+  `account` and `sharing` are reserved module names (see `reference/payload.md` → *Backend*).
 - **CI → `ci: false`** by default, for both templates. Set `ci: true` only when the request asks for
   CI / GitHub Actions (`projectOptionKeywords.ci`). It is a top-level field, not a `featuresConfig`
   flag, so it never switches the template to blank. Never asked.
@@ -129,7 +129,7 @@ Sepetim/                              (showcase: full example app)
 ├── androidApp/  iosApp/  shared/ (Koin + Navigation)   always
 ├── core/  (logging (always), review (always), network, database (DataStore), room, designsystem, multilang, purchases, ads, …)
 ├── feature/home/  feature/monetization/  feature/onboarding/  (blank + room: feature/notes/)
-├── server/  core/api/  core/auth/  feature/account/  feature/sharing/   (blank + backend only)
+├── server/ (backend template)  core/api/  core/auth/  feature/account/  feature/sharing/   (blank + backend only)
 └── build-logic/
 ```
 Get a single yes/no before generating.
@@ -182,10 +182,12 @@ it uses Google's test ad unit IDs and asks for UMP/ATT consent on the first visi
 (a real app should ask at launch; the EEA consent debug geography is debug-only). If it has
 `feature/notes`, say Notes is a demo: replace it or remove it. If it has `server/` (backend on), say
 what to do next: add the user's own Firebase config files (`androidApp/google-services.json`,
-`iosApp/iosApp/GoogleService-Info.plist`; never commit them), then start the local server with
-`./gradlew :server:runLocal` (an embedded PostgreSQL kept in `.local-server/`;
-`./gradlew :server:resetLocal` wipes it). Invite links open as `<scheme>://invite/<token>`. The
-app's own data is added with the `cmp-backend` skill.
+`iosApp/iosApp/GoogleService-Info.plist`; never commit them), put the same Firebase project's id in
+`.local-server/config.properties` (`firebaseProjectId=<id>`), then start the local server from the
+project root with `./gradlew :server:runLocal` (an embedded PostgreSQL kept in `.local-server/`;
+`./gradlew :server:resetLocal` wipes it). `server/README.md` and `server/SECURITY-CHECKLIST.md`
+describe the server. Invite links open as `<scheme>://invite/<token>`. The app's own data is added
+with the `cmp-backend` skill.
 Add one line for deep links: "deep link: `<scheme>://`" (scheme = project name in lower case;
 showcase opens `<scheme>://user/{username}` and `<scheme>://settings`, blank opens `<scheme>://` and
 `<scheme>://<module>` for each custom module).

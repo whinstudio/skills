@@ -12,7 +12,7 @@ opens the IDE, and verifies the Android/iOS builds.
 - [Claude Code](https://code.claude.com)
 - The cmpose MCP server, added once (Node.js 20+ and git):
 
-      claude mcp add cmpose -- npx -y @cmpose/mcp@0.5.3
+      claude mcp add cmpose -- npx -y @cmpose/mcp@0.6.0
 
   then restart Claude Code. Without it the skill stops and prints this command.
 - Internet access once, for the first generation (it downloads the pinned template)
@@ -74,9 +74,11 @@ After generation:
 
 1. Add your own Firebase config files (`androidApp/google-services.json`,
    `iosApp/iosApp/GoogleService-Info.plist`). Never commit them.
-2. Start the local server: `./gradlew :server:runLocal` (embedded PostgreSQL kept in
-   `.local-server/`; `./gradlew :server:resetLocal` wipes it).
-3. Add the app's own data with the [`cmp-backend`](../cmp-backend) skill.
+2. Put the same Firebase project's id in `.local-server/config.properties` at the project
+   root (`firebaseProjectId=<id>`); `runLocal` stops without it. The file is git-ignored.
+3. Start the local server from the project root: `./gradlew :server:runLocal` (embedded
+   PostgreSQL kept in `.local-server/`; `./gradlew :server:resetLocal` wipes it).
+4. Add the app's own data with the [`cmp-backend`](../cmp-backend) skill.
 
 ## Configuration — `defaults.json`
 
