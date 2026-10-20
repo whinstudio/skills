@@ -1,13 +1,13 @@
 {
   "_generated": {
     "by": "scripts/sync-contract.sh",
-    "date": "2026-10-19"
+    "date": "2026-10-20"
   },
-  "contractVersion": "32bec62e5553",
+  "contractVersion": "a48e5ff35c7e",
   "mcp": {
     "package": "@cmpose/mcp",
-    "version": "0.5.3",
-    "install": "claude mcp add cmpose -- npx -y @cmpose/mcp@0.5.3"
+    "version": "0.6.0",
+    "install": "claude mcp add cmpose -- npx -y @cmpose/mcp@0.6.0"
   },
   "limits": {
     "minSdkMin": 24,
@@ -318,7 +318,7 @@
         "requires": [
           "backend"
         ],
-        "note": "models and routes shared by the app and the server"
+        "note": "the app's client models and routes for the backend API, checked by ApiContractTest"
       },
       "core/auth": {
         "requires": [
