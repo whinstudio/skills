@@ -39,15 +39,14 @@ Snapshot (backend release): 10 variants — `Showcase`, `ShowcaseMod`, `BlankMin
 and `BlankAds` came with the monetization release, for the in-app purchases and ads flags; Room is on in
 `BlankFull`, `BlankAds` and `BlankPurchases`, which has it alone: no custom module, theming and
 multi-language off; `BlankBackend` is the only variant with the backend, next to a custom module and with detekt off, so it has no detekt rows). A full
-run had 188 checks before the server moved to the backend template (re-measure it on the first run with both
-pins), five of them `Room schema unchanged by the build` (both showcases and the three Room
+run has 190 checks with both pins (188 before the server moved to the backend template), five of them `Room schema unchanged by the build` (both showcases and the three Room
 variants). `BlankBackend`'s `server/` comes from the cmpose backend template, the smoke's second pin, and
 generating it builds the server's Docker image. It adds the server's tests (`:server:test`), `core/api`'s
 `ApiContractTest` against the server's API description (`contract-test-missing` when it did not run or was
 skipped), a sign-in screen check without Firebase
 config files, the invite deep link (`invite/abc` instead of `settings`) and a local server run
 (`:server:runLocal`, `GET /health`, stop). The
-`--build-only` count was not re-measured for this release (69 at the monetization release, before Room);
+`--build-only` run has 83 checks;
 it holds the checks that do not need the emulator/simulator or a release run, one of them `release is minified (mapping.txt)`; one check asserts that the skill's `contractVersion` (read from `CMP_SKILLS_DIR`, default the sibling skills checkout) equals @cmpose/core's. On every variant with detekt the smoke runs detekt
 twice: with the project's own config, then with compass-kit's (`detekt (compass-kit rules)`, the
 gate Compass applies). If the table or the final count differs, the backend changed: go
