@@ -36,11 +36,12 @@ background colour only.
 the game sized it (no rescale: games fit their zoom to `Screen`) three times, 2 s apart from 4 s after the game scene
 opens, and keeps the frame with the most colours, so a floor change or fade does not end up as the background.
 
-`kit.json` `version` must be one Compass supports (3, 4 or 5). Edit here, not in Compass: Compass pulls this repo
+`kit.json` `version` must be one Compass supports (3, 4, 5 or 6). Edit here, not in Compass: Compass pulls this repo
 before every run.
 
 ## Versions
 
+- v6: Economy rules in `CLAUDE.md` (currency, boosters, custom extras, `CompassBooster` and `CompassEconomy` tests), the shell owns the interstitial, the leaderboard button goes through `IMenuSideButtons`; requires Compass with the Task 8 PR of the game economy plan (unity-kit v6 support).
 - v5: `CompassBranding`, `CompassMenuShotTests`, importer `folders`/`borders`/Branding; requires Compass with the Task 8 PR of the game menus plan (unity-kit v5 support).
 - v4: `CompassArtImporter`, Art rules in `CLAUDE.md`; requires Compass with unity-kit v4 support (whinstudio/Compass#23).
 - v3: materials, UI kit, game shell, presentation rig and juice come from the template.
