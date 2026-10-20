@@ -224,16 +224,20 @@ Kotlin hard keywords (\`kotlinHardKeywords\`): ${c.kotlinHardKeywords.map(k => '
 - Notes is a demo: replace it or remove it. New tables go into the existing \`AppDatabase\`.
 
 ## Backend (\`backend\`)
-- \`backend\` → a Ktor server in \`server/\` (Firebase ID-token check, Flyway migrations with \`V1\` = users, spaces,
-  members, invites, files; tests on an embedded PostgreSQL), \`core/api\` (models and routes shared by the app and the
-  server), \`core/auth\` (Firebase sign-in: email, Google, Apple; the backend client's token), \`feature/account\`
-  (sign-in, settings, account deletion) and \`feature/sharing\` (spaces, members, invites).
+- \`backend\` → a Ktor server in \`server/\`, generated from the cmpose backend template with sharing on and no sample
+  feature (Firebase ID-token check; users, spaces, members, invites and files; Flyway migrations; tests on an embedded
+  PostgreSQL; an included build, checked with \`./gradlew :server:build\`), \`core/api\` (the app's client models and
+  routes for the backend API, checked against the server's API description by \`ApiContractTest\`), \`core/auth\`
+  (Firebase sign-in: email, Google, Apple; the backend client's token), \`feature/account\` (sign-in, settings,
+  account deletion) and \`feature/sharing\` (spaces, members, invites).
 - Blank only: showcase ignores \`featuresConfig\` and never contains the server parts.
 - Turn it on only when the user explicitly asks for a server/backend, sign-in, or sharing data with other users.
 - Invite link: \`<scheme>://invite/<token>\`. \`account\` and \`sharing\` are therefore reserved module names.
 - After generation: add your own Firebase config files (\`google-services.json\`, \`GoogleService-Info.plist\`; never
-  commit them), then start the local server with \`./gradlew :server:runLocal\` (an embedded PostgreSQL kept in
-  \`.local-server/\`; \`:server:resetLocal\` deletes it). App data is added with the \`cmp-backend\` skill.
+  commit them), put the same Firebase project's id in \`.local-server/config.properties\` (\`firebaseProjectId=<id>\`;
+  \`runLocal\` stops without it), then start the local server from the project root with \`./gradlew :server:runLocal\`
+  (an embedded PostgreSQL kept in \`.local-server/\`; \`:server:resetLocal\` deletes it). App data is added with the
+  \`cmp-backend\` skill.
 
 ## blank vs showcase
 - **blank**: \`featuresConfig\` reflects the user's choices; \`features\` = custom modules

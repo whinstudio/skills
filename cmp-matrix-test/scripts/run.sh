@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Runs the private cmpose release-tools repo's smoke gate (`npm run smoke`) and keeps a copy of its output.
-# Usage: run.sh [--ref <tag|branch> | --dir <template dir>] [--build-only]
+# Usage: run.sh [--ref <tag|branch> | --dir <template dir>] [--backend-ref <tag> | --backend-dir <dir>] [--build-only]
+#        (--backend-*: the backend template for the backend variant's server/; default: the installed core's pin)
 # Env:   CMP_BACKEND_DIR (REQUIRED: your cmpose release-tools checkout)
 set -u
 B=${CMP_BACKEND_DIR:-}

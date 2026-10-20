@@ -49,23 +49,27 @@ below; the personal space is still a space.
 
 ## The pattern
 
-This project has no sample feature. Copy the shape of `server/.../files/`: `FileRepository.kt` (an Exposed table
-object and a repository whose methods are each one `transaction(db) { ... }`), `FileRoutes.kt` (`requireUser()`
-first, then `requireRole`; a record looked up by id is loaded first and checked in its own space, `requireFile`)
-and `FileRoutesTest.kt` (the tests). The role checks are in `server/.../sharing/Access.kt`. Read them before
-writing.
+This project has no sample feature. Copy the shape of `server/.../files/`: `FileRepository.kt` (the Exposed table
+object `StoredFiles` and a repository whose methods are each one `transaction(db) { ... }`), `FileRoutes.kt`
+(`requireUser()` first, then `requireRole`; a record looked up by id is loaded first and checked in its own space,
+`requireFile`) and the tests, `server/src/test/kotlin/<package as folders>/server/FileRoutesTest.kt` (next to the
+other tests, not under `files/`). The role checks are in `server/.../sharing/Access.kt`. Read them before writing.
 
 A new record type gets its own package, `server/.../feature/<name>/`, one file per part:
 
 | File | What |
 |------|------|
-| `<Entity>Table.kt` | the Exposed table object |
 | `<Entity>Dto.kt` | the response, draft and patch DTOs and the validation |
-| `<Entity>Repository.kt` | the queries |
+| `<Entity>Repository.kt` | the Exposed table object, then the queries |
 | `<Entity>Routes.kt` | `fun Route.<entity>Routes(...)` |
 | `<Entity>OpenApi.kt` | its paths and schemas in the API description |
 
 Its tests go in `server/src/test/kotlin/<package as folders>/server/feature/<name>/`.
+
+No file of its own for the table object: a file whose only top-level declaration is `object Trips` must be named
+`Trips.kt`, or the server's detekt (`MatchingDeclarationName`, active in `server/detekt.yml`; `:server:build` runs
+it) fails, and a `@Suppress` is not allowed. Put the object at the top of `<Entity>Repository.kt`, as `StoredFiles`
+sits in `files/FileRepository.kt`, or, if it must stand alone, name the file after it (`Trips.kt`).
 
 ## 1. Migration
 
@@ -103,7 +107,8 @@ CREATE INDEX trips_space_page ON trips(space_id, created_at DESC, id DESC);
 
 ## 2. Table and DTOs
 
-`<Entity>Table.kt`. Flyway owns the schema; the object only describes it to Exposed. Never `SchemaUtils.create`.
+The table object goes at the top of `<Entity>Repository.kt` (see "The pattern"). Flyway owns the schema; the object
+only describes it to Exposed. Never `SchemaUtils.create`.
 
 ```kotlin
 // Mirrors db/migration/V<n>__trips.sql; Flyway owns the schema.
@@ -296,6 +301,10 @@ and schema must be in it: the app's `ApiContractTest` (step 7) checks the app ag
 - Name each schema after the app's model in `core/api` (`Trip`, `TripPage`, `TripDraft`), not after the server's
   DTO (`TripResponse`), as `FileResponse` is described as `File`: `ApiContractTest` looks every model up by that
   name (`Model("Trip", ...)`) and otherwise reports "not in the API description".
+- A response schema lists **every** field in `required`, the nullable ones included: the server always sends each
+  field (a null as `null`), and `ApiContractTest` reports a field left out of `required` whose model field has no
+  default ("the server may leave it out, the model has no default"). A request schema requires only what the client
+  must send.
 - Call `tripPaths()` in the `paths` block of `openApiSpec()` and `tripSchemas()` in the `schemas` block of
   `components()`.
 - Add the new paths to the expected set of `listsEveryRouteAndNothingElse` in `server/src/test/.../OpenApiTest.kt`.
@@ -309,6 +318,18 @@ internal fun JsonObjectBuilder.tripPaths() {
             fails(BadRequest, Unauthorized, NotFound)
         })
     }
+}
+
+internal fun JsonObjectBuilder.tripSchemas() {
+    // Every field, coverFileId (nullable) included
+    put("Trip", objectOf(listOf("id", "spaceId", "title", "coverFileId", "createdAt", "updatedAt")) {
+        put("id", uuid())
+        put("spaceId", uuid())
+        put("title", string())
+        put("coverFileId", uuid().nullable())
+        put("createdAt", int64())
+        put("updatedAt", int64())
+    })
 }
 ```
 
