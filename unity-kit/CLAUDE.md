@@ -28,8 +28,9 @@ Read the sections that are there and build the game on them:
   pause. The rewarded ad belongs to the shell's Continue and the economy (boosters and extras, through `IEconomyAds`);
   add no other rewarded ad. No banner: the template shows it on the menu only. While `CompassAutoPlay.Requested` is
   true, show no ad: it would stop the AutoPlayer.
-- **Premium and purchases:** keep the template's paywall and premium flow; premium players see no ads. While
-  `CompassAutoPlay.Requested` is true, do not open the paywall.
+- **Premium and purchases:** keep the template's paywall and premium flow; premium players see no forced ads (no
+  interstitial, no banner) but may still choose a rewarded ad. While `CompassAutoPlay.Requested` is true, do not open
+  the paywall.
 - **Network and NET:** keep them; add network calls only if the plan asks for them.
 - **Leaderboards** (only if the section is there): submit the best score at game over and add one leaderboard
   button to the menu with `IMenuSideButtons.AddSideButton(MenuSide.Right, KitSprites.Podium,
