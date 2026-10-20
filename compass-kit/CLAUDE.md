@@ -52,8 +52,9 @@ conversation: pass what they need as the argument (the gates, the class to test,
 - Writing or fixing unit tests: `cmp-testing`; only running them: `cmp-gates tests`
 - detekt findings: `cmp-detekt` (only when detekt is set up)
 - App data on the server (a migration, a `server/.../feature/<name>/` package with its routes and tests, the
-  `core/api` model, the client repository and screen for it): `cmp-backend` (only when `server/` exists;
-  `./gradlew :server:test` runs the server's tests, which `cmp-gates` does not)
+  `core/api` model, the client repository and screen for it): `cmp-backend` (only when `server/` exists).
+  The server's check, `./gradlew :server:build --console=plain` (its tests and detekt), is not a `cmp-gates`
+  gate: after a server change run it yourself
 - Run the gates (after a screen or module, before saying you are done): `cmp-gates`; it returns
   a short report and fixes only mechanical failures
 - A failure `cmp-gates` left open, or when and how to build: `cmp-verify`

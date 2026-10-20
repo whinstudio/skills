@@ -142,12 +142,15 @@ data class TripDraft(val title: String = "", val coverFileId: String? = null)
 ```
 
 - A draft or patch holds only the fields a client may set: never the id, the space, the user, the times or a role.
-  The server's JSON setup refuses unknown fields with a 400, which blocks mass assignment.
+  The server's JSON setup (`ignoreUnknownKeys = false`) refuses a body with an unknown field, a field the server
+  owns or a value of the wrong type before your code runs: the error handler answers 400 `BAD_REQUEST`
+  "Malformed request body", without `fields`. That blocks mass assignment.
 - Responses are built from the row (`toResponse()`), never the row or an internal object itself. Response fields
   have no defaults: the server does not encode defaults, so such a field would be missing on the wire.
-- Validate every field at the boundary in one function that returns all problems at once
+- Validate every field of a well-formed body at the boundary in one function that returns all problems at once
   (`fun tripErrors(title: String): List<FieldError>`, lengths in characters with `codePointCount`); the route
-  answers `badRequest("Invalid trip", errors)`, a 400 with `fields`.
+  answers `badRequest("Invalid trip", errors)`, a 400 whose `fields` names each invalid field (empty, too long,
+  out of range).
 
 ## 3. Repository
 
@@ -176,6 +179,30 @@ class TripRepository(private val db: Database) {
     }
 }
 ```
+
+- `toTrip()`, `toResponse()`, `TripCursor`, `cursor()`, `before()`, `trips.add()`, `call.page()` and `newTrip()`
+  in these examples are yours to write: a project generated with backend has no sample feature that defines them.
+  The cursor, for example:
+
+  ```kotlin
+  /** The last row of a page; opaque on the wire (URL-safe Base64 of `createdAt:id`). */
+  data class TripCursor(val createdAt: Long, val id: UUID) {
+      fun encode(): String = Base64.getUrlEncoder().withoutPadding().encodeToString("$createdAt:$id".toByteArray())
+
+      companion object {
+          /** Null when [text] is not a cursor this server issued (the route answers 400). */
+          fun decode(text: String): TripCursor? = runCatching {
+              val (time, id) = String(Base64.getUrlDecoder().decode(text)).split(':', limit = 2)
+              TripCursor(time.toLong(), UUID.fromString(id))
+          }.getOrNull()
+      }
+  }
+
+  // Strictly after [cursor] in the newest-first order; the id breaks ties within one millisecond.
+  private fun before(cursor: TripCursor): Op<Boolean> =
+      (Trips.createdAt less cursor.createdAt) or
+          ((Trips.createdAt eq cursor.createdAt) and (Trips.id less cursor.id))
+  ```
 
 - Every list and every change filters by the space in the same query (`spaceId` **and** `id` for update and
   delete): an id from another space then matches nothing and answers 404.
@@ -266,6 +293,9 @@ and schema must be in it: the app's `ApiContractTest` (step 7) checks the app ag
   from `OpenApiSpec.kt` (`operation`, `returns`, `fails`, `pathParameters("Id")`, `jsonBody`, `schema`, `objectOf`,
   `arrayOf`, `string`, `uuid`, `int64`, `nullable()`). Paths are relative to `/api/v1`: `/spaces/{id}/trips` and
   `/trips/{id}`. A request schema is `objectOf(..., closed = true)`; a nullable response field is `.nullable()`.
+- Name each schema after the app's model in `core/api` (`Trip`, `TripPage`, `TripDraft`), not after the server's
+  DTO (`TripResponse`), as `FileResponse` is described as `File`: `ApiContractTest` looks every model up by that
+  name (`Model("Trip", ...)`) and otherwise reports "not in the API description".
 - Call `tripPaths()` in the `paths` block of `openApiSpec()` and `tripSchemas()` in the `schemas` block of
   `components()`.
 - Add the new paths to the expected set of `listsEveryRouteAndNothingElse` in `server/src/test/.../OpenApiTest.kt`.
@@ -319,9 +349,10 @@ table. Required cases, at least:
 - **Viewer cannot write:** each POST, PATCH and DELETE as a VIEWER answers 404 and the data is unchanged; the
   viewer's GET works.
 - A path id that is not a UUID answers 404.
-- **Validation:** for every rule an empty, a too long, a wrong-type, an unknown and a server-owned field (`id`,
-  `spaceId`, `createdBy`) each answer 400 with `fields`; a bad `limit` or `cursor` is 400 and the pages do not
-  overlap.
+- **Validation:** for every rule an empty and a too long value answer 400 with `fields` naming each invalid field
+  (all of them at once); a wrong type, an unknown field and a field the server owns (`id`, `spaceId`, `createdBy`)
+  answer 400 (a malformed body, no `fields`: check only the status) and change nothing; a bad `limit` or `cursor`
+  is 400 and the pages do not overlap.
 - With an image field: a `coverFileId` from another space is refused.
 
 Helpers (in the package `<package>.server`): `jsonClient()`, `jsonBody(token, body)`, `errorCode()`,
@@ -329,9 +360,9 @@ Helpers (in the package `<package>.server`): `jsonClient()`, `jsonBody(token, bo
 `personalSpace`, `invite`, `accept` and `userId` in `SharingTestClient.kt`; `authDeps()` in `TestApp.kt`; tokens
 from `TestKeys.token(sub = "<name>")`.
 
-Run them with `./gradlew :server:test --console=plain` from the project root (the first run downloads the
-PostgreSQL binaries once). `server/` is an included build: `allTests` and the `cmp-gates` gates do not run its
-tests, so run this yourself.
+Check the server with `./gradlew :server:build --console=plain` from the project root: it compiles the server and
+runs its tests and its detekt (the first run downloads the PostgreSQL binaries once). `server/` is an included
+build: `allTests` and the `cmp-gates` gates do not run it, so run this yourself.
 
 ## 7. `core/api` model
 
@@ -440,7 +471,7 @@ Firebase project ids in any committed file.
   may not see answers 404, never 403; lists page with `limit` and `cursor`.
 - The new paths and schemas are in `OpenApiSpec.kt` and the paths in `OpenApiTest`.
 - The IDOR and validation tests cover no token, another user, a non-member, a viewer's write and bad input, and
-  `./gradlew :server:test` passes.
+  `./gradlew :server:build --console=plain` passes.
 - The `core/api` models use the server's JSON names, every new route and model is in `ApiContractTest`'s lists, and
   `cmp-gates` is green (`allTests` runs `ApiContractTest` against the server's description).
 - The client repository uses `BaseRepository` and `@Named(BACKEND_CLIENT)`, the screen follows `SelectedSpace`, and
