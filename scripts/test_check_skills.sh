@@ -65,7 +65,7 @@ check "R8 *-new-project skill without cmp-new-project's contract fails" bash -c 
 
 ukit() { # a complete unity-kit/
   local d="$TMP/unity-kit"; mkdir -p "$d"
-  echo '{ "version": 5 }' > "$d/kit.json"; echo '{}' > "$d/settings.json"; echo '# unity-kit' > "$d/README.md"
+  echo '{ "version": 6 }' > "$d/kit.json"; echo '{}' > "$d/settings.json"; echo '# unity-kit' > "$d/README.md"
   echo '<!-- compass-unity-kit -->' > "$d/CLAUDE.md"; echo "UNITY='@UNITY@'" > "$d/compass-unity"
   echo 'public static class CompassAutoPlay {}' > "$d/CompassAutoPlay.cs"; echo 'public class CompassArtImporter {}' > "$d/CompassArtImporter.cs"
   echo 'public static class CompassBranding {}' > "$d/CompassBranding.cs"; echo 'public class CompassMenuShotTests {}' > "$d/CompassMenuShotTests.cs"
@@ -74,8 +74,8 @@ reset; ukit; rm "$TMP/unity-kit/compass-unity"; runc
 check "R9 unity-kit without compass-unity fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: unity-kit: compass-unity is missing" <<<"$2"' _ "$CODE" "$OUT"
 reset; ukit; rm "$TMP/unity-kit/CompassMenuShotTests.cs"; runc
 check "R9 unity-kit without the menu shot test fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: unity-kit: CompassMenuShotTests.cs is missing" <<<"$2"' _ "$CODE" "$OUT"
-reset; ukit; echo '{ "version": 4 }' > "$TMP/unity-kit/kit.json"; runc
-check "R9 unity-kit still at version 4 fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: unity-kit: kit.json version must be 5" <<<"$2"' _ "$CODE" "$OUT"
+reset; ukit; echo '{ "version": 5 }' > "$TMP/unity-kit/kit.json"; runc
+check "R9 unity-kit still at version 5 fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: unity-kit: kit.json version must be 6" <<<"$2"' _ "$CODE" "$OUT"
 reset; ukit; runc
 check "R9 complete unity-kit passes" bash -c '[ "$1" -eq 0 ] && ! grep -q "FAIL: unity-kit" <<<"$2"' _ "$CODE" "$OUT"
 

@@ -24,17 +24,42 @@ Read the sections that are there and build the game on them:
 
 - **Texts and languages:** no player-visible text in code. Every new text gets a key in your module's string
   tables for every language the game ships, and is shown with `LocalizedText` or `ILocalizer.Get`.
-- **Ads:** show an interstitial at a natural break: after the shell's game-over or level card returns (the shell does
-  not show it; the pacer may skip it). The rewarded ad is the
-  shell's Continue (below); do not add another. No banner over the play area. While `CompassAutoPlay.Requested` is
-  true, show no interstitial or rewarded ad: it would stop the AutoPlayer.
+- **Ads:** the shell shows the interstitial after its game-over or level card; never show one yourself, never on
+  pause. The rewarded ad belongs to the shell's Continue and the economy (boosters and extras, through `IEconomyAds`);
+  add no other rewarded ad. No banner: the template shows it on the menu only. While `CompassAutoPlay.Requested` is
+  true, show no ad: it would stop the AutoPlayer.
 - **Premium and purchases:** keep the template's paywall and premium flow; premium players see no ads. While
   `CompassAutoPlay.Requested` is true, do not open the paywall.
 - **Network and NET:** keep them; add network calls only if the plan asks for them.
 - **Leaderboards** (only if the section is there): submit the best score at game over and add one leaderboard
-  button to the menu (`KitFactory.Button(..., KitButtonVariant.Icon)`, opening `ShowLeaderboardAsync`). That button
-  is the only change the menu gets.
+  button to the menu with `IMenuSideButtons.AddSideButton(MenuSide.Right, KitSprites.Podium,
+  LeaderboardsKeys.Leaderboard, ...)`, opening `ShowLeaderboardAsync`. That button is the only change the menu gets
+  besides the economy's.
 - **Save system** (only if the section is there): keep saved values, like the best score, with it.
+
+## Economy (only if Assets/_Project/Compass/Resources/GameEconomy.json exists)
+
+Compass wrote the game's economy plan into `GameEconomy.json`: its currency, boosters and 0–3 extras. Read the
+template README sections "Economy" and "Writing a custom extra" first.
+
+- **Currency:** award it only the plan's way, with `IEconomy.Earn`; never for an ad outside an extra.
+- **Boosters:** call `IBoosters.ChooseForRunAsync` before the shell's `Begin` and apply the boosters it returns;
+  handle `IBoosters.Used` while playing. The game stays winnable without boosters.
+- **Texts:** `economy.currency.name` in every string table the game ships (the plan gives the English name; translate
+  it), `economy.booster.<id>.name` and `.desc` for each booster, `economy.extra.<id>.name` (and whatever its window
+  shows) for each custom extra. Pass the currency name as an argument; no wording that adds a suffix to it.
+- **Ready extras** (`supply`, `wheel`, `login`) are the template's: do not rebuild or restyle them.
+- **Custom extras** (`"kind":"custom"`): build each one in your game module on the economy foundation: its side
+  button with `IEconomyExtraButtons.AddExtraButton`, its window with `IEconomyWindows.OpenExtra`, timers and limits
+  with `Cooldown`, `DailyCounter`, `Streak` and `WeightedPick`, its values in `IEconomyExtrasStore.For(id)`, rewarded
+  ads only through `IEconomyAds`. Register it in the scene's `LifetimeScope` (`MenuScope` / `GameScope`) like any
+  feature. Every reward given for an ad has a daily limit; random rewards show their odds; no real money. Nothing
+  opens and no ad is asked for while `CompassAutoPlay.Requested` is true: the frame already refuses, so do not open
+  your own windows around it.
+- **Tests:** for each booster an EditMode test in category `CompassBooster` whose method name contains the booster's
+  id and proves its effect; for each custom extra one in category `CompassEconomy` whose method name contains the
+  extra's id and checks its reward and its limit. Compass looks for the id in the test method's name.
+- Never edit `GameEconomy.json` (Compass writes it) or the icons in `Assets/_Project/Resources/Art/game-icons/`.
 
 ## Screens, shell and world
 
@@ -123,8 +148,10 @@ world is drawn with them.
 - Do not touch `Assets/_Project/Compass/` (its `Editor/`, `Resources/` and JSON files included),
   `Assets/_Project/Resources/Branding/`, `Assets/_Project/Branding/`, `branding/`,
   `Assets/_Project/Tests/PlayMode/Compass/`, the UI pack folders of `Assets/_Project/Compass/Resources/GameSkin.json`
-  (`Assets/_Project/Resources/Art/<pack>/` for `ui.pack` and every pack its sprite paths name), `.compass/` (only read
-  and copy from it), `compass-unity`, `.claude/` or `keystore*`.
+  (`Assets/_Project/Resources/Art/<pack>/` for `ui.pack` and every pack its sprite paths name),
+  `Assets/_Project/Compass/Resources/GameEconomy.json` (Compass writes it), the icons in
+  `Assets/_Project/Resources/Art/game-icons/`, `.compass/` (only read and copy from it), `compass-unity`, `.claude/`
+  or `keystore*`.
 
 ## AutoPlayer (required)
 
