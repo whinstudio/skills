@@ -383,7 +383,8 @@ from `TestKeys.token(sub = "<name>")`.
 
 Check the server with `./gradlew :server:build --console=plain` from the project root: it compiles the server and
 runs its tests and its detekt (the first run downloads the PostgreSQL binaries once). `server/` is an included
-build: `allTests` and the `cmp-gates` gates do not run it, so run this yourself.
+build that `allTests` does not run; in a Compass project `cmp-gates` runs it as its server gate, elsewhere run it
+yourself.
 
 ## 7. `core/api` model
 

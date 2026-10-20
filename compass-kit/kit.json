@@ -16,6 +16,7 @@
     { "name": "Android", "tasks": [":androidApp:assembleDebug"] },
     { "name": "iOS", "tasks": [":shared:compileKotlinIosSimulatorArm64"] },
     { "name": "detekt", "tasks": ["detekt"], "requires": "detekt" },
-    { "name": "Testler", "tasks": ["allTests"], "countTests": true }
+    { "name": "Testler", "tasks": ["allTests"], "countTests": true },
+    { "name": "Sunucu derlemesi", "tasks": [":server:build"], "requires": "backend" }
   ]
 }

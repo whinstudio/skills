@@ -31,9 +31,8 @@ A change is finished only when every gate below passes in the current session. R
 `cmp-gates` (all of them, or the ones you need, e.g. `cmp-gates tests`), not with `./gradlew` in
 this session: it runs the exact commands shown in a separate subagent and returns a short report.
 `./gradlew build` is not used because it links release iOS frameworks and runs out of memory.
-The one exception: when `server/` exists and you changed it, run `./gradlew :server:build --console=plain`
-yourself. It is not a `cmp-gates` gate (`server/` is an included build that the gates do not run), so nothing
-else checks the server's tests and detekt.
+When `server/` exists, the gates include the server: `:server:build` (its tests and detekt; `server/` is an
+included build that `allTests` does not cover), run through `cmp-gates` like the others.
 
 <!-- compass:gates -->
 
@@ -56,8 +55,7 @@ conversation: pass what they need as the argument (the gates, the class to test,
 - detekt findings: `cmp-detekt` (only when detekt is set up)
 - App data on the server (a migration, a `server/.../feature/<name>/` package with its routes and tests, the
   `core/api` model, the client repository and screen for it): `cmp-backend` (only when `server/` exists).
-  The server's check, `./gradlew :server:build --console=plain` (its tests and detekt), is not a `cmp-gates`
-  gate: after a server change run it yourself (the one exception in "Definition of done").
+  The server's check, `:server:build` (its tests and detekt), is a `cmp-gates` gate when `server/` exists.
 - Run the gates (after a screen or module, before saying you are done): `cmp-gates`; it returns
   a short report and fixes only mechanical failures
 - A failure `cmp-gates` left open, or when and how to build: `cmp-verify`
