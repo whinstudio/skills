@@ -27,7 +27,8 @@ Read the sections that are there and build the game on them:
 - **Ads:** the shell shows the interstitial after its game-over or level card; never show one yourself, never on
   pause. The rewarded ad belongs to the shell's Continue and the economy (boosters and extras, through `IEconomyAds`);
   add no other rewarded ad. No banner: the template shows it on the menu only. While `CompassAutoPlay.Requested` is
-  true, show no ad: it would stop the AutoPlayer.
+  true, show no ad: it would stop the AutoPlayer. Never call `ShowInterstitialAsync` or `ShowBreakAsync` from game
+  code: the shell shows the full-screen ad after its end panel, and `AdCallSitesTests` fails the gate otherwise.
 - **Premium and purchases:** keep the template's paywall and premium flow; premium players see no forced ads (no
   interstitial, no banner) but may still choose a rewarded ad. While `CompassAutoPlay.Requested` is true, do not open
   the paywall.
