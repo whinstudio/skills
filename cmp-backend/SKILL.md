@@ -475,8 +475,10 @@ internal class KtorTripRepository(private val client: HttpClient) : BaseReposito
   server still enforces it; the UI only avoids offering what will fail.
 - A 404 after a space switch or a removal means the space is gone for this user: call `selectedSpace.refresh()`
   (it falls back to the personal space) instead of showing an error.
-- A 409 `QUOTA_EXCEEDED` on a create or an upload is a full quota, not a bug: say which one (by `quota`, a string in
-  `core/multilang`) and keep what the user entered.
+- A 409 `QUOTA_EXCEEDED` is a full quota, not a bug. The template's writes that hit one are an upload, a space
+  create, an invite create and an invite accept; another write only does once you add a quota check to it. The app's
+  `DataError.Http` carries `apiCode` only, not the body's `quota`, so tell which quota is full by the call that
+  failed (an upload means storage), say so with a string in `core/multilang`, and keep what the user entered.
 
 ## 10. Screen
 
