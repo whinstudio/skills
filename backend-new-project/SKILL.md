@@ -145,9 +145,9 @@ Summarize:
 - the rules for writing code in it, from `backend_describe` → `conventions` (short): every
   `/api/v1` route calls `call.requireUser()` (with sharing `call.requireRole(...)`); a row the caller
   may not see answers 404 like a missing row; a new feature goes under `feature/<name>/` copying
-  `feature/sample`, with a new migration and tests; a list that can grow pages like `GET /api/v1/items`
-  (`limit`, `cursor`), a small list with a fixed upper bound may answer in one array like
-  `GET /api/v1/items/recent`, never an unbounded list; go through `SECURITY-CHECKLIST.md` for every new
+  `feature/sample`, with a new migration and tests; a list that can grow pages (`limit`, `cursor`) and a small list
+  with a fixed upper bound may answer in one array (when the sample feature is present, its
+  `GET /api/v1/items` and `GET /api/v1/items/recent` show both), never an unbounded list; go through `SECURITY-CHECKLIST.md` for every new
   route or table;
 - running locally: create `.local-server/config.properties` with
   `firebaseProjectId=<Firebase console → Project settings → Project ID>`, then `./gradlew runLocal`
