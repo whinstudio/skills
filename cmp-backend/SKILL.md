@@ -232,9 +232,10 @@ class TripRepository(private val db: Database) {
 
 - Every list and every change filters by the space in the same query (`spaceId` **and** `id` for update and
   delete): an id from another space then matches nothing and answers 404.
-- Lists page with `limit` (1..200, default 50) and an opaque `cursor`: the URL-safe Base64 of the last row's
-  `createdAt:id`. Ask for `limit + 1` rows; the extra one says another page follows. A bad `limit` or a cursor the
-  server did not issue is a 400 naming it. Never return an unbounded list.
+- A list that can grow pages with `limit` (1..200, default 50) and an opaque `cursor`: the URL-safe Base64 of the
+  last row's `createdAt:id`. Ask for `limit + 1` rows; the extra one says another page follows. A bad `limit` or a
+  cursor the server did not issue is a 400 naming it. A small list with a fixed upper bound (the spaces and members
+  lists, which the quotas bound) may answer in one plain array. Never return an unbounded list.
 - A `coverFileId` the client sends is checked with `FileRepository.get(id)`: it must exist and be in the same space,
   otherwise a 400 on that field.
 - Build it next to the others in `module()` in `Application.kt` (`val trips = deps.db?.let(::TripRepository)`, after
