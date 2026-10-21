@@ -33,7 +33,7 @@ There is no static contract copy: the rules are read from `game_describe` at run
    - the generator runs locally as an MCP server; add it once with this command, then restart Claude
      Code (`/exit`, then `claude`) and ask again:
 
-         claude mcp add cmpose -- npx -y @cmpose/mcp@0.6.1
+         claude mcp add cmpose -- npx -y @cmpose/mcp@0.7.1
 
    - it needs Node.js 20+ and git: run `scripts/doctor.sh` and report `node20` and `git` (if it
      cannot run, just say so).
