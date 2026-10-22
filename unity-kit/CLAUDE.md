@@ -73,6 +73,9 @@ themes", "Game shell" and "Game world: presentation and juice" before writing UI
   Menus and dialogs may wear the art pack's UI skin and the game's logo; Compass sets them. Never restyle them.
 - **In-game UI only through `IGameShell`** (`Kturker.UnityBase.Features.Shell.GameShell`, injected into your
   presenter). Never draw your own HUD, score text, start hint or end cards.
+  - The HUD (score, coins, lives) is the shell's and wears the game's skin. Game HUD items such as hearts or keys go
+    into `ShellHudView.Items` (a `KitFlowRow` that shrinks, then wraps), built with kit parts and
+    `GameSkin.Icon(...)`. Never draw a HUD of your own, its icons or its digits, not even from pack sprites.
   - A game that needs a screen of its own (a shop, upgrades, a level map) builds it only with the kit
     (`KitFactory.Button`, `.Card`, `.Sheet`, … in `Core/Presentation/Kit`, shown with `KitScreens.Show`, bound with
     `uiBinder.BindTree`), never with plain uGUI parts. Every text gets a `ThemedText`, every image a `ThemedGraphic`.
@@ -110,6 +113,11 @@ world is drawn with them.
 
 - **Read `.compass/art/INDEX.md` first:** for each pack it lists the tile size, the path of the overview image and
   every PNG. Look at the overview image to pick the sprites.
+- **World roles:** `.compass/art/WORLD.md` lists the sprites Compass chose and already copied into
+  `Assets/_Project/Resources/Art/<slug>/` for `background`, `decor`, `collectible`, `ground` and `hazard`. Draw the
+  background, decor and collectibles with them (ground and hazard may also come from the pack). Never draw clouds,
+  coins, gems or decor as plain circles, rectangles or dots. Only a role marked `none` is drawn in code, with theme
+  role colours, and the final summary then says `placeholder: <role>`.
 - **Copy only the files you use**, with `cp`, into `Assets/_Project/Resources/Art/<slug>/` (`mkdir -p` the folder
   first), keeping the file names. Do not copy whole packs. Load them with `Resources.Load<Sprite>("Art/<slug>/<name>")`
   (no `.png`). `Assets/_Project/Compass/Editor/CompassArtImporter.cs` imports them as sprites with the pack's
@@ -125,7 +133,8 @@ world is drawn with them.
   - Sprites keep their own colours: leave `SpriteRenderer.color` white and do not apply `WorldPalette` colours or
     materials to them. This is the only exception to "no colour constants". `HitFlash` and particles may still use
     palette colours.
-  - Menus, the shell's HUD and its cards stay in the theme; Compass derives the theme colours from the pack.
+  - Menus, the shell's HUD and its cards wear the game's skin: Compass takes the theme colours (the atmosphere
+    palette) from the world's sprites and dresses the HUD with the pack's HUD icons and digits.
   - The menu background is rendered from your game scene with every Canvas hidden, 3 seconds after the AutoPlayer
     starts: the world must be on screen by then.
 - **Physics:** tiles the player cannot walk through get a `BoxCollider2D`; the player gets a `Rigidbody2D` (not
@@ -150,9 +159,9 @@ world is drawn with them.
   audio files yourself.
 - Do not touch `Assets/_Project/Compass/` (its `Editor/`, `Resources/` and JSON files included),
   `Assets/_Project/Resources/Branding/`, `Assets/_Project/Branding/`, `branding/`,
-  `Assets/_Project/Tests/PlayMode/Compass/`, the UI pack folders of `Assets/_Project/Compass/Resources/GameSkin.json`
-  (`Assets/_Project/Resources/Art/<pack>/` for `ui.pack` and every pack its sprite paths name),
-  `Assets/_Project/Compass/Resources/GameEconomy.json` (Compass writes it), the icons in
+  `Assets/_Project/Tests/PlayMode/Compass/`, any file `Assets/_Project/Compass/Resources/GameSkin.json` names (never
+  edit or delete one; you may copy more files into those folders, since the skin also names files in the world
+  pack's folder), `Assets/_Project/Compass/Resources/GameEconomy.json` (Compass writes it), the icons in
   `Assets/_Project/Resources/Art/game-icons/`, `.compass/` (only read and copy from it), `compass-unity`, `.claude/`
   or `keystore*`.
 
