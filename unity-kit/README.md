@@ -51,7 +51,9 @@ the overlay canvases moved onto the camera, so the world stays behind the HUD. G
 `ILocalizer`, `IPaywall`, `IEconomyWindows`, `IGameShell`) are found by simple name, as generated games rename the
 template's namespaces; services are resolved from the loaded `LifetimeScope`s. It logs one `COMPASS_UI_SHOT <name>
 ok`, `skipped: <reason>` or `failed: <reason>` line per screen and fails only when `settings`, `hud`, `pause` or the
-end card failed.
+end card failed. It plays the real game in the editor, so what the game stores in the editor's PlayerPrefs (progress,
+a paywall or economy window already seen) stays, as after any PlayMode run; if Unity is killed before the test ends,
+the `lang.code` choice it selected stays too.
 
 `kit.json` `version` must be one Compass supports (3, 4, 5, 6 or 7). Edit here, not in Compass: Compass pulls this repo
 before every run.
