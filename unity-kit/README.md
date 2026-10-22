@@ -12,6 +12,7 @@ Compass's rules for the code step of a prompt-made Unity game (spec: Compass
 | `CompassArtImporter.cs` | `Assets/_Project/Compass/Editor/CompassArtImporter.cs` | imports `Resources/Art/` and `Resources/Branding/` as sprites, the app icons as textures |
 | `CompassBranding.cs` | `Assets/_Project/Compass/Editor/CompassBranding.cs` | writes icons and splash into the player settings (v5) |
 | `CompassMenuShotTests.cs` | `Assets/_Project/Tests/PlayMode/Compass/CompassMenuShotTests.cs` | explicit PlayMode test that renders the menu background (v5) |
+| `CompassUiShotTests.cs` | `Assets/_Project/Tests/PlayMode/Compass/CompassUiShotTests.cs` | explicit PlayMode test that renders the dressed UI screens for the design review (v7) |
 
 Materials, the UI kit, the game shell, the presentation rig and the juice helpers come from the Unity game
 template itself (since v3); the kit only tells the agent to use them.
@@ -36,11 +37,28 @@ background colour only.
 the game sized it (no rescale: games fit their zoom to `Screen`) three times, 2 s apart from 4 s after the game scene
 opens, and keeps the frame with the most colours, so a floor change or fade does not end up as the background.
 
-`kit.json` `version` must be one Compass supports (3, 4, 5 or 6). Edit here, not in Compass: Compass pulls this repo
+`CompassUiShotTests` is `[Explicit]` too; Compass runs it alone with `-testCategory CompassUiShot -compassShotDir
+<folder> -compassShotSize <w>x<h> [-compassShotLanguage <code>]` (without `-nographics`). With AutoPlay off it opens
+the menu and draws `ui-settings`, `ui-paywall` and `ui-economy` (the last two are skipped when the game has no
+purchases or no economy window), then with AutoPlay on (the menu's first game is started like its Play button when the
+AutoPlayer has not opened the game scene 8 s after the menu) the game scene's `ui-hud`, `ui-pause` and the end card
+(`ui-level-complete` in Levels mode, else `ui-game-over`, with `Time.timeScale` 0 so the AutoPlayer stays still). It
+selects the language through the template's `LanguageSelector` (so the settings' language row shows it too; the stored
+`lang.code` choice is restored afterwards), hides the network inspector's overlay while it draws, closes a paywall or
+economy window left open before each screen (and the paywall and economy window right after their own shot), and
+counts a screen as failed when its view (settings panel, pause panel, end card) is not open. Each screen is drawn with
+the overlay canvases moved onto the camera, so the world stays behind the HUD. Game types (`MenuView`, `PauseView`,
+`ILocalizer`, `IPaywall`, `IEconomyWindows`, `IGameShell`) are found by simple name, as generated games rename the
+template's namespaces; services are resolved from the loaded `LifetimeScope`s. It logs one `COMPASS_UI_SHOT <name>
+ok`, `skipped: <reason>` or `failed: <reason>` line per screen and fails only when `settings`, `hud`, `pause` or the
+end card failed.
+
+`kit.json` `version` must be one Compass supports (3, 4, 5, 6 or 7). Edit here, not in Compass: Compass pulls this repo
 before every run.
 
 ## Versions
 
+- v7: `CompassUiShotTests` (UI screen shots for the design review); requires Compass with the Part 3 PR of the game UI atmosphere plan.
 - v6: Economy rules in `CLAUDE.md` (currency, boosters, custom extras, `CompassBooster` and `CompassEconomy` tests), the shell owns the interstitial, the leaderboard button goes through `IMenuSideButtons`; requires Compass with the Task 8 PR of the game economy plan (unity-kit v6 support).
 - v5: `CompassBranding`, `CompassMenuShotTests`, importer `folders`/`borders`/Branding; requires Compass with the Task 8 PR of the game menus plan (unity-kit v5 support).
 - v4: `CompassArtImporter`, Art rules in `CLAUDE.md`; requires Compass with unity-kit v4 support (whinstudio/Compass#23).
