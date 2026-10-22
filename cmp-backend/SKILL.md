@@ -320,6 +320,9 @@ and schema must be in it: the app's `ApiContractTest` (step 7) checks the app ag
   from `OpenApiSpec.kt` (`operation`, `returns`, `fails`, `pathParameters("Id")`, `jsonBody`, `schema`, `objectOf`,
   `arrayOf`, `string`, `uuid`, `int64`, `nullable()`). Paths are relative to `/api/v1`: `/spaces/{id}/trips` and
   `/trips/{id}`. A request schema is `objectOf(..., closed = true)`; a nullable response field is `.nullable()`.
+- A paged GET names its query parameters: `limit` (integer, 1..200, default 50: the bounds the route checks) and
+  `cursor` (a string, the previous page's `nextCursor`). `OpenApiSpec.kt` has no query parameter helper; write a
+  private `queryParameter` in `<Entity>OpenApi.kt` and pass the list as `operation(..., parameters = ...)`.
 - Name each schema after the app's model in `core/api` (`Trip`, `TripPage`, `TripDraft`), not after the server's
   DTO (`TripResponse`), as `FileResponse` is described as `File`: `ApiContractTest` looks every model up by that
   name (`Model("Trip", ...)`) and otherwise reports "not in the API description".
@@ -332,10 +335,30 @@ and schema must be in it: the app's `ApiContractTest` (step 7) checks the app ag
 - Add the new paths to the expected set of `listsEveryRouteAndNothingElse` in `server/src/test/.../OpenApiTest.kt`.
 
 ```kotlin
+private const val MAX_PAGE = 200
+private const val DEFAULT_PAGE = 50
+
+private fun queryParameter(name: String, schema: JsonObject, description: String? = null) = buildJsonObject {
+    put("name", name)
+    put("in", "query")
+    description?.let { put("description", it) }
+    put("schema", schema)
+}
+
 internal fun JsonObjectBuilder.tripPaths() {
+    val listParameters = buildJsonArray {
+        add(queryParameter("limit", buildJsonObject {
+            put("type", "integer")
+            put("minimum", 1)
+            put("maximum", MAX_PAGE)
+            put("default", DEFAULT_PAGE)
+        }))
+        add(queryParameter("cursor", string(), "The nextCursor of the previous page"))
+    }
     putJsonObject("/spaces/{id}/trips") {
         put("parameters", pathParameters("Id"))
-        put("get", operation("A space's trips, newest first, a page at a time (VIEWER or above)") {
+        val summary = "A space's trips, newest first, a page at a time (VIEWER or above)"
+        put("get", operation(summary, parameters = listParameters) {
             returns(OK, "One page", schema("TripPage"))
             fails(BadRequest, Unauthorized, NotFound)
         })

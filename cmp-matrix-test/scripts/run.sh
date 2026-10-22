@@ -3,6 +3,8 @@
 # Usage: run.sh [--ref <tag|branch> | --dir <template dir>] [--backend-ref <tag> | --backend-dir <dir>] [--build-only]
 #        (--backend-*: the backend template for the backend variant's server/; default: the installed core's pin)
 # Env:   CMP_BACKEND_DIR (REQUIRED: your cmpose release-tools checkout)
+# One { } block: bash reads it all before running, so editing this file during a run cannot change the run.
+{
 set -u
 B=${CMP_BACKEND_DIR:-}
 if [ -z "$B" ]; then
@@ -18,3 +20,4 @@ LOG="$HOME/cmp-verify/cmp-matrix-test-$(date +%Y%m%d-%H%M%S).log"
 echo "log: $LOG"
 cd "$B" && npm run smoke -- "$@" 2>&1 | tee "$LOG"
 exit "${PIPESTATUS[0]}"
+}
