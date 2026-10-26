@@ -40,7 +40,7 @@ if [ -d "$UK" ]; then
   done
   [ -f "$UK/compass-unity" ] && { grep -qF '@UNITY@' "$UK/compass-unity" || bad unity-kit "compass-unity has no @UNITY@ placeholder"; }
   [ -f "$UK/CLAUDE.md" ] && { grep -qF '<!-- compass-unity-kit -->' "$UK/CLAUDE.md" || bad unity-kit "CLAUDE.md has no compass-unity-kit marker"; }
-  [ -f "$UK/kit.json" ] && { [ "$(jq -r '.version' "$UK/kit.json")" = 6 ] || bad unity-kit "kit.json version must be 6"; }
+  [ -f "$UK/kit.json" ] && { [ "$(jq -r '.version' "$UK/kit.json")" = 7 ] || bad unity-kit "kit.json version must be 7"; }
   # settings.json denies python on purpose; every other file must not suggest it.
   grep -rqI --exclude=settings.json 'python' "$UK" 2>/dev/null && bad unity-kit "mentions python (the code step has no interpreter)"
 fi
