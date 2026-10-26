@@ -7,11 +7,12 @@ using UnityEngine;
 
 /// <summary>
 /// Compass unity-kit — do not edit in projects. Compass runs <see cref="Apply"/> in batchmode after the import: it
-/// writes the app icons and the splash colour from <see cref="SettingsPath"/> into the player settings and turns the
-/// "Made with Unity" splash off. The outcome is one log line: <c>COMPASS_BRANDING ok</c>, or
+/// writes the app icons, the splash colour and the launch screen logo from <see cref="SettingsPath"/> into the player
+/// settings and turns the "Made with Unity" splash off. The outcome is one log line: <c>COMPASS_BRANDING ok</c>, or
 /// <c>COMPASS_BRANDING failed: &lt;reason&gt;</c> and exit code 1.
-/// Unity 6 has no public player setting for the Android 12+ system splash or the iOS launch screen colour: Android
-/// draws its system splash from the adaptive icon, iOS keeps the template's launch screen.
+/// With a logo, the iOS launch screen and the Android static splash show it centred on the splash colour while the
+/// engine loads; without one they stay as the template has them. Android 12+ still draws its system splash from the
+/// adaptive icon first.
 /// </summary>
 public static class CompassBranding
 {
@@ -24,6 +25,7 @@ public static class CompassBranding
     {
         public string splashBackground;
         public string iconBackground;
+        public string logo;
         public Icons icons;
     }
 
@@ -92,10 +94,50 @@ public static class CompassBranding
         {
             failure ??= e.Message;
         }
+        try
+        {
+            if (!string.IsNullOrEmpty(settings.logo)) ApplyLaunchScreen(Texture(settings.logo));
+        }
+        catch (BrandingException e)
+        {
+            failure ??= e.Message;
+        }
         AssetDatabase.SaveAssets();
         // Read back: an editor or licence that keeps the Unity splash on must not pass silently
         if (PlayerSettings.SplashScreen.show || PlayerSettings.SplashScreen.showUnityLogo) return "unity splash still on";
         return failure;
+    }
+
+    /// <summary>
+    /// The logo centred on the splash colour, shown by the OS before the first Unity frame. The launch screen colours,
+    /// sizes and the Android image have no public setter, so they are written to the serialized player settings.
+    /// </summary>
+    private static void ApplyLaunchScreen(Texture2D logo)
+    {
+        PlayerSettings.iOS.SetiPhoneLaunchScreenType(iOSLaunchScreenType.ImageAndBackgroundRelative);
+        PlayerSettings.iOS.SetiPadLaunchScreenType(iOSLaunchScreenType.ImageAndBackgroundRelative);
+        PlayerSettings.iOS.SetLaunchScreenImage(logo, iOSLaunchScreenImageType.iPhonePortraitImage);
+        PlayerSettings.iOS.SetLaunchScreenImage(logo, iOSLaunchScreenImageType.iPhoneLandscapeImage);
+        PlayerSettings.iOS.SetLaunchScreenImage(logo, iOSLaunchScreenImageType.iPadImage);
+        PlayerSettings.Android.splashScreenScale = AndroidSplashScreenScale.Center;
+
+        var asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset").FirstOrDefault()
+            ?? throw new BrandingException("ProjectSettings.asset is not loaded");
+        var settings = new SerializedObject(asset);
+        var background = PlayerSettings.SplashScreen.backgroundColor;
+        Property(settings, "iOSLaunchScreenBackgroundColor").colorValue = background;
+        Property(settings, "iOSLaunchScreeniPadBackgroundColor").colorValue = background;
+        Property(settings, "iOSLaunchScreenFillPct").floatValue = LogoFillPercent;
+        Property(settings, "iOSLaunchScreeniPadFillPct").floatValue = LogoFillPercent;
+        Property(settings, "androidSplashScreen").objectReferenceValue = logo;
+        settings.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private const float LogoFillPercent = 60f;
+
+    private static SerializedProperty Property(SerializedObject settings, string name)
+    {
+        return settings.FindProperty(name) ?? throw new BrandingException($"player setting {name} not found");
     }
 
     private static void ApplyIcons(Icons icons)
@@ -135,6 +177,6 @@ public static class CompassBranding
     private static Texture2D Texture(string path)
     {
         return AssetDatabase.LoadAssetAtPath<Texture2D>(path)
-            ?? throw new BrandingException($"icon {path} is not an imported texture");
+            ?? throw new BrandingException($"{path} is not an imported texture");
     }
 }

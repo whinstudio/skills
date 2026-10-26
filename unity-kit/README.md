@@ -26,10 +26,13 @@ sprites get that nine-slice border and a full-rect mesh, as the template's tiled
 
 `CompassBranding.Apply` (run by Compass with `-executeMethod`) reads `Assets/_Project/Compass/compass-branding.json`,
 sets the default, iOS and Android (adaptive, legacy, round) icons, turns the "Made with Unity" splash off, reads it
-back and logs `COMPASS_BRANDING ok` or `COMPASS_BRANDING failed: <reason>` (exit 1). Unity 6 (6000.3) has no public
-player setting for the Android 12+ system splash or the iOS launch screen colour: Android draws its system splash
-from the adaptive icon, iOS keeps the template's launch screen, and `splashBackground` goes to the Unity splash
-background colour only.
+back and logs `COMPASS_BRANDING ok` or `COMPASS_BRANDING failed: <reason>` (exit 1). When the file has `logo` (a
+texture path, `Assets/_Project/Resources/Branding/title-logo.png` from Compass), the iOS launch screen (iPhone and
+iPad, "image and background, relative", 60 %) and the Android static splash (centred) show that logo on the
+`splashBackground` colour while the engine loads. The launch screen colours, sizes and the Android image are written
+to the serialized player settings, as Unity 6 (6000.3) has no public setter for them. Without `logo` the template's
+launch screen stays. Android 12+ draws its system splash from the adaptive icon before either. Older kits ignore
+`logo`, so it needs no kit version.
 
 `CompassMenuShotTests` is `[Explicit]`, so `./compass-unity play` skips it; Compass runs it alone with
 `-testCategory CompassMenuShot -compassShotOut <png> -compassShotSize <w>x<h>` (without `-nographics`). It finds
