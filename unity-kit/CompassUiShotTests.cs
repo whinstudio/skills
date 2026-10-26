@@ -33,6 +33,8 @@ public class CompassUiShotTests
     private const float CardSeconds = 3f;
     private const string Marker = "COMPASS_UI_SHOT";
     private const float NearGap = 0.01f;
+    // Canvas orders are 16-bit; this leaves room for the template's overlay orders (up to 900)
+    private const int TopSortingOrder = 30000;
 
     private const float CloseSeconds = 1f;
 
@@ -95,6 +97,9 @@ public class CompassUiShotTests
 
         SetAutoPlay(true);
         yield return OpenGame();
+        var guide = Try(Do(HideGuide));
+        if (guide != null) Debug.Log($"{Marker} guide: {guide}");
+        yield return new WaitForSecondsRealtime(PanelSeconds);
         yield return Shot(folder, "hud", true, null, 0f, null, false, width, height);
 
         yield return Shot(folder, "pause", true, Do(() => Raise(FindView("PauseView", true), "PauseClicked")),
@@ -203,6 +208,18 @@ public class CompassUiShotTests
             var inner = e is TargetInvocationException && e.InnerException != null ? e.InnerException : e;
             return $"{inner.GetType().Name}: {inner.Message}";
         }
+    }
+
+    /// <summary>
+    /// Hides the template's developer guide ("start here", shown only in the Editor, never to players), so the HUD
+    /// and the pause panel are shot as a player sees them. Hide, not its "Got it": that would save guide.dismissed.
+    /// </summary>
+    private static void HideGuide()
+    {
+        var type = FindComponentType("GuideView");
+        if (type == null) return;
+        foreach (var view in UnityEngine.Object.FindObjectsByType(type, FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            type.GetMethod("Hide", Type.EmptyTypes)?.Invoke(view, null);
     }
 
     private static Func<string> Do(Action action) => () =>
@@ -392,18 +409,23 @@ public class CompassUiShotTests
         var camera = temporary != null ? temporary : Camera.main;
         var target = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
         var previousTarget = camera.targetTexture;
-        var moved = new List<(Canvas Canvas, RenderMode Mode, Camera Camera, float Distance)>();
+        var moved = new List<(Canvas Canvas, RenderMode Mode, Camera Camera, float Distance, int Layer, int Order)>();
         var overlays = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None)
             .Where(c => c.isRootCanvas && c.renderMode == RenderMode.ScreenSpaceOverlay).ToList();
         var orders = overlays.Select(c => c.sortingOrder).Distinct().OrderByDescending(o => o).ToList();
+        var topLayer = SortingLayer.layers.Length > 0 ? SortingLayer.layers[SortingLayer.layers.Length - 1].id : 0;
         foreach (var canvas in overlays)
         {
-            moved.Add((canvas, canvas.renderMode, canvas.worldCamera, canvas.planeDistance));
+            moved.Add((canvas, canvas.renderMode, canvas.worldCamera, canvas.planeDistance, canvas.sortingLayerID, canvas.sortingOrder));
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.worldCamera = camera;
             // Just past the near plane, the top canvas nearest: a camera canvas is depth-tested, so one farther than
             // the world (the template's 50 units) would sit behind a 3D world or a 2D world's sprites
             canvas.planeDistance = camera.nearClipPlane + NearGap * (1 + orders.IndexOf(canvas.sortingOrder));
+            // Sprites sort by layer and order before depth: a 2D world's sprites above order 0 would draw over the
+            // panels. Topmost layer, orders kept in their order above any world sprite, as an overlay would draw.
+            canvas.sortingLayerID = topLayer;
+            canvas.sortingOrder = Mathf.Clamp(TopSortingOrder + canvas.sortingOrder, TopSortingOrder, short.MaxValue);
         }
         camera.targetTexture = target;
         try
@@ -414,12 +436,14 @@ public class CompassUiShotTests
         }
         finally
         {
-            foreach (var (canvas, mode, worldCamera, distance) in moved)
+            foreach (var (canvas, mode, worldCamera, distance, layer, order) in moved)
             {
                 if (canvas == null) continue;
                 canvas.renderMode = mode;
                 canvas.worldCamera = worldCamera;
                 canvas.planeDistance = distance;
+                canvas.sortingLayerID = layer;
+                canvas.sortingOrder = order;
             }
             if (camera != null) camera.targetTexture = previousTarget;
             target.Release();
