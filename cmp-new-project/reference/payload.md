@@ -103,6 +103,16 @@ Kotlin hard keywords (`kotlinHardKeywords`): `as`, `break`, `class`, `continue`,
   (an embedded PostgreSQL kept in `.local-server/`; `:server:resetLocal` deletes it). App data is added with the
   `cmp-backend` skill.
 
+## Insights (`insights`)
+- `insights` → `core/insights` (Firebase Crashlytics + Analytics behind `Insights`; Kermit warnings and errors go to
+  Crashlytics). Blank only: showcase always has `core/insights`. `insights` is independent: it implies nothing.
+- Turn it on only when the user explicitly asks for crash reporting or analytics (Crashlytics, Firebase/Google
+  Analytics), not for an app that shows analytics.
+- Without your own Firebase config files (`androidApp/google-services.json`, `iosApp/iosApp/GoogleService-Info.plist`;
+  never commit them) the app builds and runs, and every `Insights` call is a no-op (`Insights.isEnabled == false`).
+  The generator warns: "Crashlytics and Analytics stay off until you add the Firebase config files (README, Insights)."
+- Nothing personal is sent: no tokens, bodies, headers, emails or names; `setUserId` takes the backend user id only.
+
 ## blank vs showcase
 - **blank**: `featuresConfig` reflects the user's choices; `features` = custom modules
   (each name once; a duplicate is refused).
