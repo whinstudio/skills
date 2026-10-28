@@ -1,13 +1,13 @@
 {
   "_generated": {
     "by": "scripts/sync-contract.sh",
-    "date": "2026-10-26"
+    "date": "2026-10-28"
   },
-  "contractVersion": "a48e5ff35c7e",
+  "contractVersion": "bc07df23943e",
   "mcp": {
     "package": "@cmpose/mcp",
-    "version": "0.8.5",
-    "install": "claude mcp add cmpose -- npx -y @cmpose/mcp@0.8.5"
+    "version": "0.8.8",
+    "install": "claude mcp add cmpose -- npx -y @cmpose/mcp@0.8.8"
   },
   "limits": {
     "minSdkMin": 24,
@@ -102,7 +102,8 @@
     "purchases",
     "ads",
     "room",
-    "backend"
+    "backend",
+    "insights"
   ],
   "dependencyRules": {
     "alwaysOn": [
@@ -238,6 +239,17 @@
       "account",
       "paylaş",
       "share with"
+    ],
+    "insights": [
+      "crashlytics",
+      "crash report",
+      "crash reporting",
+      "firebase analytics",
+      "google analytics",
+      "add analytics",
+      "çökme rapor",
+      "analitik ekle",
+      "firebase analitik"
     ]
   },
   "templateKeywords": {
@@ -325,6 +337,12 @@
           "backend"
         ],
         "note": "Firebase sign-in (email, Google, Apple); the server client's token"
+      },
+      "core/insights": {
+        "requires": [
+          "insights"
+        ],
+        "note": "Firebase Crashlytics + Analytics; a no-op until the Firebase config files are added"
       }
     },
     "featureModules": {
