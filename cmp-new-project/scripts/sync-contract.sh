@@ -83,7 +83,10 @@ const keywordMap = {
   ads:              ['admob', 'banner ad', 'interstitial', 'rewarded ad', 'reklam göster', 'reklam ekle'],
   // backend: explicit intent ONLY, as for purchases (naming it switches the template to blank). The skill turns it on
   // when the request asks for a server, sign-in or sharing between users, not for an app that merely shows accounts.
-  backend:          ['backend', 'server', 'sunucu', 'sign in', 'giriş yap', 'login', 'hesap', 'account', 'paylaş', 'share with']
+  backend:          ['backend', 'server', 'sunucu', 'sign in', 'giriş yap', 'login', 'hesap', 'account', 'paylaş', 'share with'],
+  // insights: explicit crash-reporting / analytics intent ONLY, as for purchases (naming it switches the template to
+  // blank). No bare 'analytics' / 'analitik' / 'crash': "an analytics dashboard app" is not a request for Firebase.
+  insights:         ['crashlytics', 'crash report', 'crash reporting', 'firebase analytics', 'google analytics', 'add analytics', 'çökme rapor', 'analitik ekle', 'firebase analitik']
 };
 // Words that mean "give me the full example app".
 const templateKeywords = {
@@ -238,6 +241,16 @@ Kotlin hard keywords (\`kotlinHardKeywords\`): ${c.kotlinHardKeywords.map(k => '
   \`runLocal\` stops without it), then start the local server from the project root with \`./gradlew :server:runLocal\`
   (an embedded PostgreSQL kept in \`.local-server/\`; \`:server:resetLocal\` deletes it). App data is added with the
   \`cmp-backend\` skill.
+
+## Insights (\`insights\`)
+- \`insights\` → \`core/insights\` (Firebase Crashlytics + Analytics behind \`Insights\`; Kermit warnings and errors go to
+  Crashlytics). Blank only: showcase always has \`core/insights\`. \`insights\` is independent: it implies nothing.
+- Turn it on only when the user explicitly asks for crash reporting or analytics (Crashlytics, Firebase/Google
+  Analytics), not for an app that shows analytics.
+- Without your own Firebase config files (\`androidApp/google-services.json\`, \`iosApp/iosApp/GoogleService-Info.plist\`;
+  never commit them) the app builds and runs, and every \`Insights\` call is a no-op (\`Insights.isEnabled == false\`).
+  The generator warns: "Crashlytics and Analytics stay off until you add the Firebase config files (README, Insights)."
+- Nothing personal is sent: no tokens, bodies, headers, emails or names; \`setUserId\` takes the backend user id only.
 
 ## blank vs showcase
 - **blank**: \`featuresConfig\` reflects the user's choices; \`features\` = custom modules
