@@ -17,7 +17,7 @@ game with the features and modules you ask for.
 - [Claude Code](https://code.claude.com)
 - The cmpose MCP server, added once (Node.js 20+ and git):
 
-      claude mcp add cmpose -- npx -y @cmpose/mcp@0.8.8
+      claude mcp add cmpose -- npx -y @cmpose/mcp@0.8.9
 
   then restart Claude Code. Without it the skill stops and prints this command.
 - Internet access once, for the first generation (it downloads the pinned template)
