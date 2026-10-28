@@ -12,7 +12,7 @@ using VContainer.Unity;
 
 /// <summary>
 /// Compass unity-kit — do not edit in projects. The game's dressed UI screens for Compass's design review: settings,
-/// paywall and an economy window from the menu, then the HUD, the pause panel and an end card from the game scene as
+/// shop and an economy window from the menu, then the HUD, the pause panel and an end card from the game scene as
 /// the game plays itself. Each screen is drawn with its canvases moved onto the camera, so the world stays behind the
 /// HUD, and written as <c>ui-&lt;name&gt;.png</c>; one <c>COMPASS_UI_SHOT &lt;name&gt; ok|skipped: …|failed: …</c>
 /// line is logged per screen. Game types are found by simple name: generated games rename the template's
@@ -41,9 +41,9 @@ public class CompassUiShotTests
     // The template's LanguageSelector stores the choice under this PlayerPrefs key
     private const string LanguagePreference = "lang.code";
 
-    // Panels that stay above every scene once opened (the paywall, the economy's windows)
+    // Panels that stay above every scene once opened (the shop, the economy's windows)
     private static readonly string[] OverlayViews =
-        { "PaywallView", "SupplyWindowView", "WheelWindowView", "LoginBonusView", "ExtraWindowView" };
+        { "ShopView", "SupplyWindowView", "WheelWindowView", "LoginBonusView", "ExtraWindowView" };
 
     private static readonly string[] EconomyViews = { "SupplyWindowView", "WheelWindowView", "LoginBonusView" };
 
@@ -90,7 +90,7 @@ public class CompassUiShotTests
             PanelSeconds, () => Expect("SettingsView"), false, width, height);
 
         yield return Reload(MenuScene);
-        yield return Shot(folder, "paywall", false, OpenPaywall, PanelSeconds, () => Expect("PaywallView"), true, width, height);
+        yield return Shot(folder, "shop", false, OpenShop, PanelSeconds, () => Expect("ShopView"), true, width, height);
 
         yield return Reload(MenuScene);
         yield return Shot(folder, "economy", false, OpenEconomy, PanelSeconds, () => Expect(EconomyViews), true, width, height);
@@ -161,7 +161,7 @@ public class CompassUiShotTests
     }
 
     /// <summary>
-    /// One screen: hides the network inspector, closes a paywall or economy window left open, runs
+    /// One screen: hides the network inspector, closes a shop or economy window left open, runs
     /// <paramref name="open"/> (null: opened, "skip: …": skipped, else the failure), waits, checks with
     /// <paramref name="check"/> that the expected view is open, draws it and logs its line; a required screen that
     /// failed is kept for the final assertion.
@@ -308,13 +308,13 @@ public class CompassUiShotTests
         }
     }
 
-    private static string OpenPaywall()
+    private static string OpenShop()
     {
-        var paywall = Resolve("IPaywall");
-        if (paywall == null) return SkipPrefix + "no purchases";
-        var show = paywall.GetType().GetMethod("Show", BindingFlags.Public | BindingFlags.Instance);
-        if (show == null || show.GetParameters().Length != 1) return "IPaywall.Show(source) is missing";
-        show.Invoke(paywall, new[] { Enum.Parse(show.GetParameters()[0].ParameterType, "Menu") });
+        var shop = Resolve("IShop");
+        if (shop == null) return SkipPrefix + "no shop";
+        var show = shop.GetType().GetMethod("Show", BindingFlags.Public | BindingFlags.Instance);
+        if (show == null || show.GetParameters().Length != 1) return "IShop.Show(source) is missing";
+        show.Invoke(shop, new[] { Enum.Parse(show.GetParameters()[0].ParameterType, "Menu") });
         return null;
     }
 
