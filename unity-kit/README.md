@@ -42,23 +42,23 @@ opens, and keeps the frame with the most colours, so a floor change or fade does
 
 `CompassUiShotTests` is `[Explicit]` too; Compass runs it alone with `-testCategory CompassUiShot -compassShotDir
 <folder> -compassShotSize <w>x<h> [-compassShotLanguage <code>]` (without `-nographics`). With AutoPlay off it opens
-the menu and draws `ui-settings`, `ui-paywall` and `ui-economy` (the last two are skipped when the game has no
-purchases or no economy window), then with AutoPlay on (the menu's first game is started like its Play button when the
+the menu and draws `ui-settings`, `ui-shop` and `ui-economy` (the last two are skipped when the game has no
+shop or no economy window), then with AutoPlay on (the menu's first game is started like its Play button when the
 AutoPlayer has not opened the game scene 8 s after the menu) the game scene's `ui-hud`, `ui-pause` and the end card
 (`ui-level-complete` in Levels mode, else `ui-game-over`, with `Time.timeScale` 0 so the AutoPlayer stays still). It
 selects the language through the template's `LanguageSelector` (so the settings' language row shows it too; the stored
-`lang.code` choice is restored afterwards), hides the network inspector's overlay while it draws, closes a paywall or
-economy window left open before each screen (and the paywall and economy window right after their own shot), and
+`lang.code` choice is restored afterwards), hides the network inspector's overlay while it draws, closes a shop or
+economy window left open before each screen (and the shop and economy window right after their own shot), and
 counts a screen as failed when its view (settings panel, pause panel, end card) is not open. Each screen is drawn with
 the overlay canvases moved onto the camera, so the world stays behind the HUD. Game types (`MenuView`, `PauseView`,
-`ILocalizer`, `IPaywall`, `IEconomyWindows`, `IGameShell`) are found by simple name, as generated games rename the
+`ILocalizer`, `IShop`, `IEconomyWindows`, `IGameShell`) are found by simple name, as generated games rename the
 template's namespaces; services are resolved from the loaded `LifetimeScope`s. It logs one `COMPASS_UI_SHOT <name>
 ok`, `skipped: <reason>` or `failed: <reason>` line per screen and fails only when `settings`, `hud`, `pause` or the
 end card failed. It plays the real game in the editor, so what the game stores in the editor's PlayerPrefs (progress,
-a paywall or economy window already seen) stays, as after any PlayMode run; if Unity is killed before the test ends,
+a shop or economy window already seen) stays, as after any PlayMode run; if Unity is killed before the test ends,
 the `lang.code` choice it selected stays too.
 
-`kit.json` `version` must be one Compass supports (3, 4, 5, 6 or 7). Edit here, not in Compass: Compass pulls this repo
+`kit.json` `version` must be one Compass supports (3, 4, 5, 6, 7 or 8; 8 is the shop: the template's shop replaces the paywall). Edit here, not in Compass: Compass pulls this repo
 before every run.
 
 ## Versions

@@ -30,9 +30,9 @@ Read the sections that are there and build the game on them:
   true, show no ad: it would stop the AutoPlayer. Never call `ShowInterstitialAsync` or `ShowBreakAsync` from game
   code: the shell shows the full-screen ad after its end panel, and `AdCallSitesTests` fails the gate otherwise.
   Never edit `AdCallSitesTests` or its allow list to get past it: move the call into the shell's flow instead.
-- **Premium and purchases:** keep the template's paywall and premium flow; premium players see no forced ads (no
-  interstitial, no banner) but may still choose a rewarded ad. While `CompassAutoPlay.Requested` is true, do not open
-  the paywall.
+- **Shop and purchases:** keep the template's shop; never add a paywall or a subscription. Remove-ads owners see no
+  forced ads (no interstitial, no banner) but may still choose a rewarded ad. Never grant currency for a purchase in
+  game code: the shop does it. While `CompassAutoPlay.Requested` is true, do not open the shop.
 - **Network and NET:** keep them; add network calls only if the plan asks for them.
 - **Leaderboards** (only if the section is there): submit the best score at game over and add one leaderboard
   button to the menu with `IMenuSideButtons.AddSideButton(MenuSide.Right, KitSprites.Podium,
@@ -69,7 +69,7 @@ template README sections "Economy" and "Writing a custom extra" first.
 The template owns the look. Read the README sections "Look: style family, fonts and the UI kit", "Colours and
 themes", "Game shell" and "Game world: presentation and juice" before writing UI or visuals.
 
-- **Screens:** menu, settings, about, paywall and pause are the template's. Do not rebuild, restyle or replace them.
+- **Screens:** menu, settings, about, shop and pause are the template's. Do not rebuild, restyle or replace them.
   Menus and dialogs may wear the art pack's UI skin and the game's logo; Compass sets them. Never restyle them.
 - **In-game UI only through `IGameShell`** (`Kturker.UnityBase.Features.Shell.GameShell`, injected into your
   presenter). Never draw your own HUD, score text, start hint or end cards.
