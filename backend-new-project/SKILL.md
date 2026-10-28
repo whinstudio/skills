@@ -34,7 +34,7 @@ There is no static contract copy: the rules are read from `backend_describe` at 
    - the generator runs locally as an MCP server; add it once with this command, then restart Claude
      Code (`/exit`, then `claude`) and ask again:
 
-         claude mcp add cmpose -- npx -y @cmpose/mcp@0.8.8
+         claude mcp add cmpose -- npx -y @cmpose/mcp@0.8.9
 
    - it needs Node.js 20+ and git: run `scripts/doctor.sh` and report `node20` and `git` (if it
      cannot run, just say so).
