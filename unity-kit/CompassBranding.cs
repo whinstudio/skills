@@ -7,8 +7,8 @@ using UnityEngine;
 
 /// <summary>
 /// Compass unity-kit — do not edit in projects. Compass runs <see cref="Apply"/> in batchmode after the import: it
-/// writes the app icons, the splash colour and the launch screen logo from <see cref="SettingsPath"/> into the player
-/// settings and turns the "Made with Unity" splash off. The outcome is one log line: <c>COMPASS_BRANDING ok</c>, or
+/// writes the app icons, the splash colour, the launch screen logo and the app orientation from <see cref="SettingsPath"/>
+/// into the player settings and turns the "Made with Unity" splash off. The outcome is one log line: <c>COMPASS_BRANDING ok</c>, or
 /// <c>COMPASS_BRANDING failed: &lt;reason&gt;</c> and exit code 1.
 /// With a logo, the iOS launch screen and the Android static splash show it centred on the splash colour while the
 /// engine loads; without one they stay as the template has them. Android 12+ still draws its system splash from the
@@ -27,6 +27,8 @@ public static class CompassBranding
         public string iconBackground;
         public string logo;
         public Icons icons;
+        // "portrait" or "landscape"; empty keeps the template's orientation
+        public string orientation;
     }
 
     [Serializable]
@@ -88,6 +90,14 @@ public static class CompassBranding
         }
         try
         {
+            ApplyOrientation(settings.orientation);
+        }
+        catch (BrandingException e)
+        {
+            failure ??= e.Message;
+        }
+        try
+        {
             ApplyIcons(settings.icons);
         }
         catch (BrandingException e)
@@ -134,6 +144,32 @@ public static class CompassBranding
     }
 
     private const float LogoFillPercent = 60f;
+
+    /// <summary>
+    /// The whole app's orientation, from launch: a landscape game turns with the phone between the two landscape
+    /// sides and never shows a portrait menu; a portrait game stays upright. Games must not switch it per scene.
+    /// </summary>
+    private static void ApplyOrientation(string orientation)
+    {
+        switch (orientation)
+        {
+            case null:
+            case "":
+                return;
+            case "landscape":
+                PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+                PlayerSettings.allowedAutorotateToPortrait = false;
+                PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+                PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+                PlayerSettings.allowedAutorotateToLandscapeRight = true;
+                return;
+            case "portrait":
+                PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+                return;
+            default:
+                throw new BrandingException($"orientation '{orientation}' is not portrait or landscape");
+        }
+    }
 
     private static SerializedProperty Property(SerializedObject settings, string name)
     {

@@ -150,6 +150,9 @@ world is drawn with them.
 - Input is the Input System (`UnityEngine.InputSystem`), touch first (`Touchscreen`, with `Mouse` as the editor
   fallback). No `UnityEngine.Input` legacy calls.
 - No `GameObject.Find`, `SendMessage` or reflection tricks.
+- Never set `Screen.orientation` or `Screen.autorotateTo*`. Compass writes the whole app's orientation (the plan's
+  portrait or landscape) into the player settings, so the menus, dialogs and the game scene all share it; a game that
+  turns only its own scene leaves the menus in the other orientation.
 - Materials: **never** call `Shader.Find` or `new Material(<Shader>)`. Unity strips every shader that no asset
   references, so on the phone `Shader.Find` returns null: objects render magenta and `new Material(null)` throws
   `ArgumentNullException`, while the Editor tests still pass. Get materials only from `WorldPalette` /
