@@ -54,13 +54,17 @@ There is no static contract copy: the rules are read from `game_describe` at run
 - **Render → `defaults.render`** (`2d`); `3d` when the request says "3D", "3d", "üç boyutlu" or
   "three-dimensional".
 - **Flags (blank only)** → the request's wording matched to `contract.flags` (save system, UI theme,
-  languages / çoklu dil, network, network inspector, leaderboards / skor tablosu, …). The generator
+  languages / çoklu dil, network, network inspector, leaderboards / skor tablosu, crash reports /
+  crashlytics / analytics / çökme raporu / analitik → `insights`, …). The generator
   adds the required ones (`flagRequires`, e.g. `networkInspector ⇒ network`); never pass flags with
   `showcase`.
   **Turn on `purchases` / `ads` only when the user explicitly asks for in-app purchases / a paywall
   (RevenueCat) or for ads (AdMob).** Never infer them from words like "premium", "subscription",
   "purchases" or "satın alma" alone (a "premium-feeling puzzle game" is not a purchases request); if
   unsure, leave them off and ask on the confirmation screen (step 3).
+  **Turn on `insights` (Firebase Crashlytics + Analytics) only when the user asks for crash reports or
+  analytics;** showcase has it. It stays off in the game until the user adds the Firebase config files
+  (the generator's warning says which).
 - **Features (blank only)** → module names the request names (lower case, `limits.moduleNameMax`
   characters, at most `limits.maxModules`, not in `reservedModuleNames`); none otherwise.
 - **Theme** → the family of `themes.families` whose `suits` fits the game the user describes; none
