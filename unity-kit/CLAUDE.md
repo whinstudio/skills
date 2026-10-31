@@ -79,6 +79,11 @@ themes", "Game shell" and "Game world: presentation and juice" before writing UI
   - A game that needs a screen of its own (a shop, upgrades, a level map) builds it only with the kit
     (`KitFactory.Button`, `.Card`, `.Sheet`, … in `Core/Presentation/Kit`, shown with `KitScreens.Show`, bound with
     `uiBinder.BindTree`), never with plain uGUI parts. Every text gets a `ThemedText`, every image a `ThemedGraphic`.
+    Give such a window (level select, shop, a picker) a card with a fixed height in reference units (bands of the 1920
+    tall portrait reference), never a fraction of the screen height, and add a `KitFitScale`
+    (`Core/Presentation/Kit/KitFitScale.cs`) like the template's own modals. On a landscape or short screen the whole
+    card then shrinks, instead of its fixed-height rows squeezing into each other. Check it at 1920x1080 as well as
+    1080x1920.
   - Use the plan's flow: call `Begin(ShellMode.Endless)` or `Begin(ShellMode.Levels)` first.
   - During play: `SetScore`, `SetBest`, `SetCounter`, `Toast(key)` (e.g. `"shell.perfect"`),
     `ShowStartHint` / `HideStartHint`.
