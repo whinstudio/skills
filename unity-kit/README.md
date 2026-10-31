@@ -32,7 +32,9 @@ iPad, "image and background, relative", 60 %) and the Android static splash (cen
 `splashBackground` colour while the engine loads. The launch screen colours, sizes and the Android image are written
 to the serialized player settings, as Unity 6 (6000.3) has no public setter for them. Without `logo` the template's
 launch screen stays. Android 12+ draws its system splash from the adaptive icon before either. Older kits ignore
-`logo`, so it needs no kit version.
+`logo`, so it needs no kit version. `orientation` (`portrait` or `landscape`, from the plan) sets the whole app's
+orientation: landscape is auto-rotation between the two landscape sides only, portrait is fixed upright; empty keeps
+the template's. Older kits ignore it too.
 
 `CompassMenuShotTests` is `[Explicit]`, so `./compass-unity play` skips it; Compass runs it alone with
 `-testCategory CompassMenuShot -compassShotOut <png> -compassShotSize <w>x<h>` (without `-nographics`). It finds
