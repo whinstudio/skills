@@ -39,6 +39,8 @@ Read the sections that are there and build the game on them:
   LeaderboardsKeys.Leaderboard, ...)`, opening `ShowLeaderboardAsync`. That button is the only change the menu gets
   besides the economy's.
 - **Save system** (only if the section is there): keep saved values, like the best score, with it.
+- **Insights** (only if the section is there): do not add analytics events unless the plan asks for them; never
+  log player data (names, emails, IDs, free text) in events or crash logs. `IInsights` is the only entry point.
 
 ## Economy (only if Assets/_Project/Compass/Resources/GameEconomy.json exists)
 

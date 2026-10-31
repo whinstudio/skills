@@ -9,7 +9,8 @@ Android APK and the iOS simulator build in the background, and opens Unity.
 
 The generated game: Unity 6, 2D or 3D, a Boot scene, a batch build script for
 Android and iOS, and either the showcase (the sample games with every feature on:
-save system, UI theme, languages, network, purchases, ads, leaderboards) or a blank
+save system, UI theme, languages, network, purchases, ads, leaderboards, crash reports
+and analytics) or a blank
 game with the features and modules you ask for.
 
 ## Requirements
