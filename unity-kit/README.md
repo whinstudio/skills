@@ -1,7 +1,6 @@
 # unity-kit
 
-Compass's rules for the code step of a prompt-made Unity game (spec: Compass
-`docs/superpowers/specs/2026-10-17-istemden-oyun-design.md` §6). Compass copies it into every new game:
+Compass's rules for the code step of a prompt-made Unity game. Compass copies it into every new game:
 
 | File | Lands at | Notes |
 |---|---|---|

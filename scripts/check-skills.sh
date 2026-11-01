@@ -10,7 +10,7 @@ fm() { # $1 = SKILL.md, $2 = key → top-level value (unquoted), empty when abse
   awk -v k="$2" 'NR==1 && $0!="---"{exit} NR>1 && $0=="---"{exit}
     NR>1 && index($0, k": ")==1 {v=substr($0, length(k)+3); gsub(/^["'\'']|["'\'']$/, "", v); print v; exit}' "$1"
 }
-INLINE_OK=" cmp-commit cmp-new-project cmp-matrix-test backend-new-project game-new-project "
+INLINE_OK=" cmp-commit cmp-new-project backend-new-project game-new-project "
 CODE_SKILLS=" cmp-code-rules cmp-feature cmp-design-to-code "
 for f in "$ROOT"/*/SKILL.md; do
   [ -f "$f" ] || continue
