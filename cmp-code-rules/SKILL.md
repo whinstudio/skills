@@ -155,11 +155,9 @@ An error is never turned into an empty list.
 - No user-visible text is hard-coded in a composable.
 - If the project has `core/multilang` (Compass turns it on for every app):
   - Each text is a property of `StringResourcesUiModel` with an English name (`expenseListTitle`).
-    When `LanguageManagerImpl` has `resourcesFor` (projects from template-2026.09.29.2 on), the
-    properties have no default value: every language object sets every property or the build
+    The properties have no default value: every language object sets every property or the build
     fails, and a device language the app does not ship shows the English object
-    (`fallbackResources`). In older projects each property's default value is its English text;
-    keep it that way.
+    (`fallbackResources`).
   - Fill the language objects (`resourceEN`, `resourceTR`, …) for every UI language the task
     names (Compass's prompt lists them). Delete the languages it does not name from `AppLanguage`
     (keep `SYSTEM`), `languageResources` and their `Resource<XX>.kt` files (`grep` for each entry
@@ -179,10 +177,6 @@ An error is never turned into an empty list.
     - A blank app without `AppTheme.kt` has a `MainScreen` without it: add it as above (collect
       with `collectAsStateWithLifecycle()`). Without it every screen shows the English strings and
       the picker has no effect.
-  - Older projects only (`LanguageManagerImpl` has `updateResource`, not `resourcesFor`): fall back
-    to `resourceEN` there when `languageResources` has no entry for the language (for example
-    `SYSTEM` on a device language the app does not ship); that template keeps the previous
-    language otherwise.
   - Language picker: `LanguageManager.setLanguage(AppLanguage.X)`, with `LanguageManager`
     injected into the ViewModel as `@Provided`; "System default" is `AppLanguage.SYSTEM`; the
     current choice comes from `getCurrentLanguageFlow()` into the ViewModel's state; each language

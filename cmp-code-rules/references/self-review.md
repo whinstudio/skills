@@ -19,7 +19,7 @@ files; do not review the whole project.
 | `println(` | debug output left behind; forbidden here, but detekt does not catch it (see `cmp-detekt`) | remove, or `log.d { }` through a Kermit logger if the line is worth keeping |
 | `!!` | crash instead of a handled case | `?:`, `requireNotNull` with a message, typed error |
 | a user-visible string literal in a composable | not translatable | a `StringResourcesUiModel` property (`core/multilang`), else `stringResource(Res.string.key)` |
-| a language object with empty strings; in projects whose `LanguageManagerImpl` has `updateResource`, a `StringResourcesUiModel` default that is not the English text | blank UI in that language | fill it; there, default = English text |
+| a language object with empty strings | blank UI in that language | fill it |
 | with `core/multilang`: a `MainScreen.kt` without a `LocalStringResources` provider or `setSystemLanguage()` (check it even if you did not change it; `shared/.../AppTheme.kt` exists: the project was generated from the release that added it or later, and those projects are generated with both, so a missing one means it was removed) | the UI stays English, the picker does nothing, and the gates stay green | wire or restore them (section 11) |
 | `catch (e: Exception)` or `runCatching` without rethrowing `CancellationException` | swallows cancellation; coroutines keep running | rethrow `CancellationException` first |
 | `.catch { emit(emptyList()) }` or any `emit(empty...)` in a catch | the error becomes "no data" | emit or return an error; the UI shows the error state |
