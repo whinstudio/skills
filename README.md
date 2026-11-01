@@ -30,13 +30,11 @@ with `/<skill-name>`.
 | [`cmp-verify`](./cmp-verify) | When to build, how to read gate output, and recipes for the common Kotlin Multiplatform, KSP, Koin and Compose resources failures. |
 | [`cmp-gates`](./cmp-gates) | Run the finish gates in a separate Sonnet subagent and get a short pass/fail report; fixes only mechanical failures with a written recipe and reports the rest. |
 | [`cmp-commit`](./cmp-commit) | On explicit request, split the work into atomic commits, run the finish gates and write Conventional Commits messages — committing only, never pushing unless asked. |
-| [`cmp-matrix-test`](./cmp-matrix-test) | Run the cmpose generator's release matrix (every variant built and launched as a release build on an Android emulator and an iOS simulator) through the smoke gate of the private release-tools repo, and report with screenshots. Requires a checkout of that repo. |
-| [`account-delegate`](./account-delegate) | Offer to hand a self-contained job to a second Claude Code account on the same machine (headless, live in a side cmux pane) and bring its report — or a worktree branch to merge — back to your main session. |
 
 **Models.** Skills that write application code (`cmp-code-rules`, `cmp-feature`,
 `cmp-design-to-code`, `cmp-backend`) run on your session model. Mechanical skills run in their own subagent on
 Sonnet and return a short report (`cmp-gates`, `cmp-detekt`, `cmp-testing`, `cmp-maestro`);
-`cmp-commit`, `cmp-new-project`, `backend-new-project`, `game-new-project` and `cmp-matrix-test` run on Sonnet. `scripts/check-skills.sh`
+`cmp-commit`, `cmp-new-project`, `backend-new-project` and `game-new-project` run on Sonnet. `scripts/check-skills.sh`
 enforces these rules.
 
 **cmpose MCP.** The three `*-new-project` skills need the cmpose MCP server. If it is not
@@ -49,7 +47,7 @@ them in step.
 it generates. Its `kit.json` lists the skills it ships — `cmp-code-rules`, `cmp-feature`,
 `cmp-design-to-code`, `cmp-maestro`, `cmp-testing`, `cmp-verify`, `cmp-gates`, `cmp-commit`, for
 projects with detekt `cmp-detekt` and, for projects with a backend (`server/`, generated from the cmpose backend template), `cmp-backend` — together with the finish gates those skills run.
-`cmp-matrix-test` also runs detekt with the kit's `detekt.yml`. See [compass-kit](#compass-kit) below for its contents.
+See [compass-kit](#compass-kit) below for its contents.
 
 ## Install
 
