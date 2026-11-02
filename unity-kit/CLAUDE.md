@@ -66,6 +66,30 @@ template README sections "Economy" and "Writing a custom extra" first.
   extra's id and checks its reward and its limit. Compass looks for the id in the test method's name.
 - Never edit `GameEconomy.json` (Compass writes it) or the icons in `Assets/_Project/Resources/Art/game-icons/`.
 
+## Tuning and difficulty
+
+- **One tuning file:** every gameplay number lives in `Assets/_Project/Features/<Module>/<Game>Tuning.cs`, one plain C#
+  class (not a `MonoBehaviour`, no `.asset`) with a public field and default value per number, registered once in the
+  game scene's `LifetimeScope` and injected where it is needed. Speeds, gravity, spawn intervals, gaps, scores, coin
+  rewards, booster strengths, durations and the level table all go there; no other file holds a gameplay number (a
+  view's own layout and animation constants may stay in that view). Prices stay in `GameEconomy.json`.
+- Above each field one comment: its kind, `feel` (how controls and motion feel), `curve` (how difficulty or rewards
+  grow) or `gate` (when something unlocks or ends), its sensible range and why this value, e.g.
+  `// curve, 0.6–1.0: the gap shrinks slowly so a new player reaches 20 points`.
+- Tests build the class with other values (`new SkyHopTuning { GapShrink = 0f }`) instead of changing code.
+- **Levels flow:** the levels are data in the tuning class, one entry per level with what is new in it (at most one
+  new mechanic, enemy or hazard; nothing new is fine), the axis it stresses (`execution`, `knowledge`, `resources`,
+  `time` or `decisions`) and a difficulty from 1 to 10.
+  - Level 1 teaches the core action with nothing else. A new thing first appears alone in an easy level before it is
+    combined with others.
+  - Ramp as a sawtooth: tension builds over a few levels, a calmer level follows a peak, the next build starts a
+    little higher. No long flat stretch, and never more than 2 between neighbouring levels.
+  - The first failure comes early and costs little (an instant retry, nothing lost), and the player can see why.
+  - An EditMode test checks the table: level 1 is at most 2, neighbours differ by at most 2, no level adds more than
+    one new thing.
+- **Endless flow:** the same ideas over time: difficulty grows in steps with short breathers, and each new obstacle
+  appears alone before it is combined.
+
 ## Screens, shell and world
 
 The template owns the look. Read the README sections "Look: style family, fonts and the UI kit", "Colours and
