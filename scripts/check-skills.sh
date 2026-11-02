@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Checks the frontmatter rules of every <skill>/SKILL.md, that compass-kit/kit.json names
-# existing skills, that the old cmpose domain is gone and every *-new-project skill shows the MCP pin.
+# existing skills, that the old cmpose domain is gone, every *-new-project skill shows the MCP pin and
+# every SKILL.md fits the compaction budget with its linked references/ files present.
 # Usage: check-skills.sh [repo root]. Exit 0 ok, 1 violations (one "FAIL: <skill>: ..." each).
 set -uo pipefail
 ROOT="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
@@ -25,6 +26,14 @@ for f in "$ROOT"/*/SKILL.md; do
   if [[ "$CODE_SKILLS" == *" $d "* ]] && { [ -n "$model" ] || [ -n "$ctx" ]; }; then
     bad "$d" "code skill must run on the session model (no model:, no context:)"
   fi
+  # R10: after a compaction Claude Code re-attaches only the first 5,000 tokens of a skill; stay under it
+  # (~4 bytes a token) and move later steps into references/ files the SKILL.md links.
+  size="$(wc -c < "$f" | tr -d ' ')"
+  [ "$size" -le 18000 ] || bad "$d" "SKILL.md is $size bytes (over 18000, the compaction budget); split steps into references/"
+  # R11: every linked references/ file exists
+  while IFS= read -r ref; do
+    [ -f "$(dirname "$f")/$ref" ] || bad "$d" "links $ref, which is missing"
+  done < <(grep -oE '\]\(references/[^)]+\)' "$f" | sed -E 's/^\]\(//; s/\)$//' | sort -u)
 done
 KIT="$ROOT/compass-kit/kit.json"
 if [ -f "$KIT" ]; then
