@@ -64,6 +64,8 @@ before every run.
 
 ## Versions
 
+Rules Compass does not need to know about keep the version: the tuning file and difficulty rules in `CLAUDE.md` (November 2026) are part of v8.
+
 - v7: `CompassUiShotTests` (UI screen shots for the design review); requires Compass with the Part 3 PR of the game UI atmosphere plan.
 - v6: Economy rules in `CLAUDE.md` (currency, boosters, custom extras, `CompassBooster` and `CompassEconomy` tests), the shell owns the interstitial, the leaderboard button goes through `IMenuSideButtons`; requires Compass with the Task 8 PR of the game economy plan (unity-kit v6 support).
 - v5: `CompassBranding`, `CompassMenuShotTests`, importer `folders`/`borders`/Branding; requires Compass with the Task 8 PR of the game menus plan (unity-kit v5 support).
