@@ -118,3 +118,5 @@ The gates in `kit.json` are both what the coding agent is told to run and what C
 itself before it calls the app ready.
 
 Hook tests: `sh compass-kit/hooks/test_secrets_guard.sh`, `sh compass-kit/hooks/test_walkthrough_guard.sh`
+
+Game namespace helper test: `bash game-new-project/scripts/test_namespace.sh`
