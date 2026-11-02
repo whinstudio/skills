@@ -79,5 +79,12 @@ check "R9 unity-kit still at version 7 fails" bash -c '[ "$1" -eq 1 ] && grep -q
 reset; ukit; runc
 check "R9 complete unity-kit passes" bash -c '[ "$1" -eq 0 ] && ! grep -q "FAIL: unity-kit" <<<"$2"' _ "$CODE" "$OUT"
 
+reset; head -c 18001 /dev/zero | tr '\0' 'x' >> "$TMP/a/SKILL.md"; runc
+check "R10 SKILL.md over the compaction budget fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: a: SKILL.md is" <<<"$2"' _ "$CODE" "$OUT"
+reset; echo 'Read [references/1-x.md](references/1-x.md) now.' >> "$TMP/a/SKILL.md"; runc
+check "R11 a missing linked reference fails" bash -c '[ "$1" -eq 1 ] && grep -q "FAIL: a: links references/1-x.md" <<<"$2"' _ "$CODE" "$OUT"
+mkdir -p "$TMP/a/references"; echo x > "$TMP/a/references/1-x.md"; runc
+check "R11 an existing linked reference passes" test "$CODE" -eq 0
+
 rm -rf "${TMP:?}"
 exit "$fail"
