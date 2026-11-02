@@ -3,7 +3,7 @@
 # template's BuildScript (-cmposeSimulator), pod install runs when there is a Podfile, then xcodebuild
 # builds Debug for the simulator SDK without signing. The editor version comes from
 # ProjectSettings/ProjectVersion.txt, the build namespace (<companyName>.<projectName>) from
-# Assets/Editor/Build/BuildScript.cs. Usage: build-ios.sh <projectDir>
+# .cmpose/generation.json (older projects: Assets/Editor/Build/BuildScript.cs). Usage: build-ios.sh <projectDir>
 # Env: UNITY_EDITOR (the editor binary; default: the Unity Hub install of the project's version),
 #      UNITY_BUILD_TIMEOUT (seconds per step, default 1800)
 set -euo pipefail
@@ -49,9 +49,9 @@ if [ -e "$DIR/Temp/UnityLockfile" ]; then
   exit 0
 fi
 
-NS="$(sed -nE 's/^namespace ([A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*)\.Editor\.Build[[:space:]]*$/\1/p' \
-  "$DIR/Assets/Editor/Build/BuildScript.cs" 2>/dev/null | head -n 1 || true)"
-[ -n "$NS" ] || { echo "FAIL: no <Company>.<Project>.Editor.Build namespace in Assets/Editor/Build/BuildScript.cs"; exit 1; }
+. "$(dirname "$0")/lib/namespace.sh"
+NS="$(game_namespace "$DIR" || true)"
+[ -n "$NS" ] || { echo "FAIL: no build namespace (companyName/projectName in .cmpose/generation.json, or <Company>.<Project>.Editor.Build in Assets/Editor/Build/BuildScript.cs)"; exit 1; }
 
 # Runs "$@" with a time limit (macOS has no timeout(1)), its output appended to the log $1; 124 when
 # the limit killed it
