@@ -109,7 +109,7 @@ frontmatter, and your session model resumes afterward.
 ## Scripts
 
 Every script prints `OK: …`, `SKIP: …` (a missing tool, exit 0) or `FAIL: …` (exit 1).
-The builds read the Unity version from `ProjectSettings/ProjectVersion.txt`, skip when the
+The builds read the Unity version from `ProjectSettings/ProjectVersion.txt` and the build namespace from the generation record (falling back to `BuildScript.cs`), skip when the
 project is open in Unity (`Temp/UnityLockfile`), stop after `UNITY_BUILD_TIMEOUT` seconds per
 step (default 1800) and write their logs to `<project>/Builds/logs/`.
 
@@ -121,7 +121,9 @@ game-new-project/
     ├── doctor.sh         # capabilities JSON: node20, git, unity, androidModule, iosModule, xcode, iosSimSdk, pod
     ├── setup.sh          # git init + initial commit → OK: git
     ├── build-android.sh  # Unity batch BuildAndroid → OK: APK <path> (<size>)
-    └── build-ios.sh      # Unity batch BuildIOS (simulator) + pod install + xcodebuild → OK: iOS simulator build
+    ├── build-ios.sh      # Unity batch BuildIOS (simulator) + pod install + xcodebuild → OK: iOS simulator build
+    ├── lib/namespace.sh  # game_namespace — <Company>.<Project> from .cmpose/generation.json, else Assets/Editor/Build/BuildScript.cs
+    └── test_namespace.sh # its test
 ```
 
 ## Notes
