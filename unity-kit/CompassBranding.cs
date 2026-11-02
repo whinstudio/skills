@@ -29,6 +29,15 @@ public static class CompassBranding
         public Icons icons;
         // "portrait" or "landscape"; empty keeps the template's orientation
         public string orientation;
+        // optional; written into the template's AppConfig asset
+        public Links links;
+    }
+
+    [Serializable]
+    private class Links
+    {
+        public string privacy;
+        public string support;
     }
 
     [Serializable]
@@ -112,6 +121,14 @@ public static class CompassBranding
         {
             failure ??= e.Message;
         }
+        try
+        {
+            ApplyLinks(settings.links);
+        }
+        catch (BrandingException e)
+        {
+            failure ??= e.Message;
+        }
         AssetDatabase.SaveAssets();
         // Read back: an editor or licence that keeps the Unity splash on must not pass silently
         if (PlayerSettings.SplashScreen.show || PlayerSettings.SplashScreen.showUnityLogo) return "unity splash still on";
@@ -169,6 +186,48 @@ public static class CompassBranding
             default:
                 throw new BrandingException($"orientation '{orientation}' is not portrait or landscape");
         }
+    }
+
+    /// <summary>
+    /// The privacy and support addresses go into the template's AppConfig asset (found by type, so the kit does not
+    /// reference it). Blank fields are left alone; no links or no AppConfig (an older template) is not an error.
+    /// </summary>
+    private static void ApplyLinks(Links links)
+    {
+        if (links == null) return;
+        if (string.IsNullOrEmpty(links.privacy) && string.IsNullOrEmpty(links.support)) return;
+        var guid = AssetDatabase.FindAssets("t:AppConfig").FirstOrDefault();
+        if (guid == null) return;
+        var config = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
+        if (config == null) return;
+
+        var serialized = new SerializedObject(config);
+        WriteLink(serialized, "privacyUrl", links.privacy);
+        WriteLink(serialized, "supportUrl", links.support);
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        EditorUtility.SetDirty(config);
+        AssetDatabase.SaveAssets();
+
+        // Read back: a field that did not stick must not pass silently
+        var check = new SerializedObject(config);
+        CheckLink(check, "privacyUrl", links.privacy);
+        CheckLink(check, "supportUrl", links.support);
+    }
+
+    private static void WriteLink(SerializedObject config, string field, string value)
+    {
+        if (string.IsNullOrEmpty(value)) return;
+        // A field this template's AppConfig does not have (older templates) is skipped
+        var property = config.FindProperty(field);
+        if (property != null) property.stringValue = value;
+    }
+
+    private static void CheckLink(SerializedObject config, string field, string value)
+    {
+        if (string.IsNullOrEmpty(value)) return;
+        var property = config.FindProperty(field);
+        if (property != null && property.stringValue != value)
+            throw new BrandingException($"links {field} was not written to AppConfig");
     }
 
     private static SerializedProperty Property(SerializedObject settings, string name)

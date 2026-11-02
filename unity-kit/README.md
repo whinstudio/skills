@@ -33,7 +33,9 @@ to the serialized player settings, as Unity 6 (6000.3) has no public setter for 
 launch screen stays. Android 12+ draws its system splash from the adaptive icon before either. Older kits ignore
 `logo`, so it needs no kit version. `orientation` (`portrait` or `landscape`, from the plan) sets the whole app's
 orientation: landscape is auto-rotation between the two landscape sides only, portrait is fixed upright; empty keeps
-the template's. Older kits ignore it too.
+the template's. Older kits ignore it too. `links` (`privacy`, `support`) is written into `AppConfig.asset`; blank
+fields are left alone; older kits ignore it. A template without `AppConfig` skips it without an error, and a field the template's AppConfig does not have (older
+templates have no `supportUrl`) is skipped.
 
 `CompassMenuShotTests` is `[Explicit]`, so `./compass-unity play` skips it; Compass runs it alone with
 `-testCategory CompassMenuShot -compassShotOut <png> -compassShotSize <w>x<h>` (without `-nographics`). It finds
