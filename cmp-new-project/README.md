@@ -77,7 +77,9 @@ After generation:
 2. Put the same Firebase project's id in `.local-server/config.properties` at the project
    root (`firebaseProjectId=<id>`); `runLocal` stops without it. The file is git-ignored.
 3. Start the local server from the project root: `./gradlew :server:runLocal` (embedded
-   PostgreSQL kept in `.local-server/`; `./gradlew :server:resetLocal` wipes it).
+   PostgreSQL kept in `.local-server/`; `./gradlew :server:resetLocal` wipes it). For an
+   Android debug run (emulator or phone over USB), also run `adb reverse tcp:18001 tcp:18001`
+   once per emulator boot or USB connection; the iOS simulator needs nothing.
 4. Add the app's own data with the [`cmp-backend`](../cmp-backend) skill.
 
 ## Configuration — `defaults.json`
