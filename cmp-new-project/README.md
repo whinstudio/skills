@@ -79,7 +79,7 @@ After generation:
 3. Start the local server from the project root: `./gradlew :server:runLocal` (embedded
    PostgreSQL kept in `.local-server/`; `./gradlew :server:resetLocal` wipes it). For an
    Android debug run (emulator or phone over USB), also run `adb reverse tcp:18001 tcp:18001`
-   once per emulator boot or USB connection; the iOS simulator needs nothing.
+   again after each emulator start, USB reconnection or adb restart; the iOS simulator needs nothing.
 4. Add the app's own data with the [`cmp-backend`](../cmp-backend) skill.
 
 ## Configuration — `defaults.json`
