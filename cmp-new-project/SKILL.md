@@ -36,7 +36,7 @@ stale skill is visible — see *Maintenance*.
      `reference/contract.json` → `mcp.install`), then restart Claude Code (`/exit`, then `claude`)
      and ask again:
 
-         claude mcp add cmpose -- npx -y @cmpose/mcp@2.2.1
+         claude mcp add cmpose -- npx -y @cmpose/mcp@2.3.0
 
    - it needs Node.js 20+ and git: run `scripts/doctor.sh` and report `node20` and `git` (if it
      cannot run, just say so).
@@ -192,7 +192,9 @@ what to do next: add the user's own Firebase config files (`androidApp/google-se
 `iosApp/iosApp/GoogleService-Info.plist`; never commit them), put the same Firebase project's id in
 `.local-server/config.properties` (`firebaseProjectId=<id>`), then start the local server from the
 project root with `./gradlew :server:runLocal` (an embedded PostgreSQL kept in `.local-server/`;
-`./gradlew :server:resetLocal` wipes it). `server/README.md` and `server/SECURITY-CHECKLIST.md`
+`./gradlew :server:resetLocal` wipes it); for an Android debug run (emulator or phone over USB), run
+`adb reverse tcp:18001 tcp:18001` again after each emulator start, USB reconnection or adb restart (the debug app reaches the server at
+`localhost:18001`; the iOS simulator needs nothing). `server/README.md` and `server/SECURITY-CHECKLIST.md`
 describe the server. Invite links open as `<scheme>://invite/<token>`. The app's own data is added
 with the `cmp-backend` skill.
 Add one line for deep links: "deep link: `<scheme>://`" (scheme = project name in lower case;

@@ -99,6 +99,7 @@ appId: <applicationId>
 
 Run it with `maestro test -e TEST_EMAIL=... -e TEST_PASSWORD=... .maestro/<flow>.yaml` against a build that talks
 to a running server (for a debug build, `./gradlew :server:runLocal` from the project root, with
-`firebaseProjectId=<id>` in `.local-server/config.properties`). Select the sign-in fields by the login screen's test
-tags; if they have none, report that as open instead of editing `feature/account`. No credentials, tokens or
-Firebase project ids in any committed file.
+`firebaseProjectId=<id>` in `.local-server/config.properties`; an Android debug build also needs
+`adb reverse tcp:18001 tcp:18001` on that device, again after each emulator start, USB reconnection or adb restart). Select the sign-in
+fields by the login screen's test tags; if they have none, report that as open instead of editing
+`feature/account`. No credentials, tokens or Firebase project ids in any committed file.
