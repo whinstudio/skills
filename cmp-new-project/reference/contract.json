@@ -1,13 +1,13 @@
 {
   "_generated": {
     "by": "scripts/sync-contract.sh",
-    "date": "2026-11-04"
+    "date": "2026-11-05"
   },
   "contractVersion": "bc07df23943e",
   "mcp": {
     "package": "@cmpose/mcp",
-    "version": "2.3.1",
-    "install": "claude mcp add cmpose -- npx -y @cmpose/mcp@2.3.1"
+    "version": "2.4.0",
+    "install": "claude mcp add cmpose -- npx -y @cmpose/mcp@2.4.0"
   },
   "limits": {
     "minSdkMin": 24,
