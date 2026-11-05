@@ -120,6 +120,7 @@ function buildContract() {
     maxLengths: f.maxLengths,
     regex: f.regex,
     kotlinHardKeywords: f.kotlinHardKeywords,
+    javaKeywords: f.javaKeywords,
     reservedModuleNames: f.reservedModuleNames,
     reservedPackagePrefix: f.reservedPackagePrefix,
     messages: f.messages,
@@ -161,7 +162,7 @@ server). **At runtime, always prefer \`cmp_describe\`'s \`contract.limits\` over
   "outputDir": "/absolute/parent/folder", // absolute; the project goes to <outputDir>/<projectName>
   "projectName": "MyApp",            // ${R.projectName}  · ≤${X.projectName} · no spaces
   "appName": "My App",               // letters/digits/space . _ ' - · trimmed · ≤${X.appName}
-  "packageName": "com.example.myapp", // ${R.packageName} · ≤${X.packageName} · ≥3 segments · no Kotlin keyword segments · not ${c.reservedPackagePrefix} or under it
+  "packageName": "com.example.myapp", // ${R.packageName} · ≤${X.packageName} · ≥3 segments · no Java/Kotlin keyword segments · not ${c.reservedPackagePrefix} or under it
   "minSdk": "${L.minSdkMin}",                    // numeric string (1–${X.minSdk} digits) in [${L.minSdkMin}..${L.minSdkMax}]
   "iosVersion": "${L.iosVersionMin}",              // ${R.iosVersionFormat} in [${L.iosVersionMin}..${L.iosVersionMax}]
   "templateType": "blank",           // "blank" | "showcase"
@@ -189,14 +190,16 @@ server). **At runtime, always prefer \`cmp_describe\`'s \`contract.limits\` over
 |---|---|---|
 | projectName | \`${R.projectName}\`, no spaces | ${X.projectName} |
 | appName | non-empty, no leading/trailing space; only letters (any script, incl. combining marks), digits, space and \`. _ ' -\` | ${X.appName} |
-| packageName | \`${R.packageName}\` (≥3 segments); no segment may be a Kotlin hard keyword (\`kotlinHardKeywords\`); must not equal or sit under the reserved template package \`${c.reservedPackagePrefix}\` (\`reservedPackagePrefix\`) | ${X.packageName} |
-| module name | \`${R.moduleName}\`; not a Kotlin hard keyword; not a reserved name (${c.reservedModuleNames.map(n => '\`' + n + '\`').join(', ')}) | ${X.moduleName} |
+| packageName | \`${R.packageName}\` (≥3 segments); no segment may be a Kotlin hard keyword (\`kotlinHardKeywords\`) or a Java keyword (\`javaKeywords\`); must not equal or sit under the reserved template package \`${c.reservedPackagePrefix}\` (\`reservedPackagePrefix\`) | ${X.packageName} |
+| module name | \`${R.moduleName}\`; not a Kotlin hard keyword or a Java keyword; not a reserved name (${c.reservedModuleNames.map(n => '\`' + n + '\`').join(', ')}) | ${X.moduleName} |
 | module count | ≤ \`maxModules\` (${L.maxModules}) | — |
 | minSdk | numeric string of 1–${X.minSdk} digits, in [${L.minSdkMin}..${L.minSdkMax}] | ${X.minSdk} |
 | iosVersion | \`${R.iosVersionFormat}\` within [${L.iosVersionMin}..${L.iosVersionMax}] | ${X.iosVersion} |
 | networkBaseUrl | \`http://\` or \`https://\` only; no whitespace, \`"\`, \`\\\`, \`$\`; checked only for blank + \`network: true\` + non-empty | ${X.networkBaseUrl} |
 
 Kotlin hard keywords (\`kotlinHardKeywords\`): ${c.kotlinHardKeywords.map(k => '\`' + k + '\`').join(', ')}.
+
+Java keywords (\`javaKeywords\`): ${c.javaKeywords.map(k => '\`' + k + '\`').join(', ')}.
 
 ## Always-on (not configurable, not in the payload)
 - **Dependency Injection (Koin)** and **Navigation** are always included.
