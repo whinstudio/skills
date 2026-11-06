@@ -49,6 +49,9 @@ it generates. Its `kit.json` lists the skills it ships — `cmp-code-rules`, `cm
 projects with detekt `cmp-detekt` and, for projects with a backend (`server/`, generated from the cmpose backend template), `cmp-backend` — together with the finish gates those skills run.
 See [compass-kit](#compass-kit) below for its contents.
 
+[`unity-kit`](./unity-kit) is the same idea for Unity games: the rules for the code step, which
+Compass copies into every new game. Its own `README.md` lists what lands where.
+
 ## Install
 
 Skills live in `~/.claude/skills/` (personal) or `<project>/.claude/skills/`
@@ -66,8 +69,8 @@ ln -s "$PWD/cmp-new-project" ~/.claude/skills/cmp-new-project
 cp -R cmp-new-project ~/.claude/skills/
 ```
 
-Start a new Claude Code session and run `/cmp-new-project`. Each skill's own
-`README.md` lists its requirements and usage.
+Start a new Claude Code session and run `/cmp-new-project`. Each `*-new-project`
+skill has its own `README.md` with its requirements and usage.
 
 ## Repository layout & conventions
 
