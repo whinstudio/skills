@@ -115,7 +115,7 @@ public static class CompassBranding
         }
         try
         {
-            if (!string.IsNullOrEmpty(settings.logo)) ApplyLaunchScreen(Texture(settings.logo));
+            if (!string.IsNullOrEmpty(settings.logo)) ApplyLaunchScreen(settings.logo, settings.orientation);
         }
         catch (BrandingException e)
         {
@@ -139,8 +139,11 @@ public static class CompassBranding
     /// The logo centred on the splash colour, shown by the OS before the first Unity frame. The launch screen colours,
     /// sizes and the Android image have no public setter, so they are written to the serialized player settings.
     /// </summary>
-    private static void ApplyLaunchScreen(Texture2D logo)
+    private static void ApplyLaunchScreen(string logoPath, string orientation)
     {
+        var logo = Texture(logoPath);
+        var landscape = orientation == "landscape";
+        var aspect = (float)logo.width / logo.height;
         PlayerSettings.iOS.SetiPhoneLaunchScreenType(iOSLaunchScreenType.ImageAndBackgroundRelative);
         PlayerSettings.iOS.SetiPadLaunchScreenType(iOSLaunchScreenType.ImageAndBackgroundRelative);
         PlayerSettings.iOS.SetLaunchScreenImage(logo, iOSLaunchScreenImageType.iPhonePortraitImage);
@@ -154,13 +157,46 @@ public static class CompassBranding
         var background = PlayerSettings.SplashScreen.backgroundColor;
         Property(settings, "iOSLaunchScreenBackgroundColor").colorValue = background;
         Property(settings, "iOSLaunchScreeniPadBackgroundColor").colorValue = background;
-        Property(settings, "iOSLaunchScreenFillPct").floatValue = LogoFillPercent;
-        Property(settings, "iOSLaunchScreeniPadFillPct").floatValue = LogoFillPercent;
-        Property(settings, "androidSplashScreen").objectReferenceValue = logo;
+        Property(settings, "iOSLaunchScreenFillPct").floatValue = IPhoneFillPercent(landscape, aspect);
+        Property(settings, "iOSLaunchScreeniPadFillPct").floatValue = IPadFillPercent(landscape, aspect);
+        Property(settings, "androidSplashScreen").objectReferenceValue = PaddedAndroidSplash(logoPath);
         settings.ApplyModifiedPropertiesWithoutUndo();
     }
 
-    private const float LogoFillPercent = 60f;
+    // The logo's share of the screen width on every platform
+    private const float LogoWidthPercent = 70f;
+    private const float PhoneLandscapeWidthOverHeight = 2.16f;
+    private const float TabletLandscapeWidthOverHeight = 4f / 3f;
+    private const string AndroidSplashPath = "Assets/_Project/Branding/android-splash.png";
+
+    /// <summary>A portrait iPhone's fill is a share of the width; a landscape iPhone's is a share of the height.</summary>
+    private static float IPhoneFillPercent(bool landscape, float logoAspect) =>
+        landscape ? HeightFillPercent(PhoneLandscapeWidthOverHeight, logoAspect) : LogoWidthPercent;
+
+    /// <summary>The iPad's fill is a share of the height in both orientations.</summary>
+    private static float IPadFillPercent(bool landscape, float logoAspect) =>
+        HeightFillPercent(landscape ? TabletLandscapeWidthOverHeight : 1f / TabletLandscapeWidthOverHeight, logoAspect);
+
+    private static float HeightFillPercent(float widthOverHeight, float logoAspect) =>
+        Mathf.Clamp(LogoWidthPercent * widthOverHeight / logoAspect, 1f, 100f);
+
+    /// <summary>
+    /// Android's centred splash scales a large image down to fit the screen, which puts a wide logo edge to edge. A
+    /// transparent margin on both sides leaves the logo at <see cref="LogoWidthPercent"/> of the width.
+    /// </summary>
+    private static Texture2D PaddedAndroidSplash(string logoPath)
+    {
+        var source = new Texture2D(2, 2);
+        if (!source.LoadImage(File.ReadAllBytes(logoPath))) throw new BrandingException($"{logoPath} is not an image");
+        var width = Mathf.RoundToInt(source.width * 100f / LogoWidthPercent);
+        var canvas = new Texture2D(width, source.height, TextureFormat.RGBA32, false);
+        canvas.SetPixels32(new Color32[width * source.height]);
+        canvas.SetPixels32((width - source.width) / 2, 0, source.width, source.height, source.GetPixels32());
+        Directory.CreateDirectory(Path.GetDirectoryName(AndroidSplashPath));
+        File.WriteAllBytes(AndroidSplashPath, canvas.EncodeToPNG());
+        AssetDatabase.ImportAsset(AndroidSplashPath, ImportAssetOptions.ForceSynchronousImport);
+        return Texture(AndroidSplashPath);
+    }
 
     /// <summary>
     /// The whole app's orientation, from launch: a landscape game turns with the phone between the two landscape
