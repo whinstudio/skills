@@ -1,6 +1,6 @@
 ---
 name: game-brief
-description: Use when someone is starting a Unity 6 mobile game or asks what to prepare before code, wants a game brief, pitch, MVP list or pillars, or asks whether a game's scope has crept or whether a new feature still fits.
+description: Use when someone is planning a Unity 6 mobile game before generating or coding it or asks what to prepare before code, wants a game brief, pitch, MVP list or pillars, or asks whether a game's scope has crept or whether a new feature still fits.
 argument-hint: "[brief <idea> | scope-check]"
 ---
 
