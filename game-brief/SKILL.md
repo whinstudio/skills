@@ -68,8 +68,8 @@ Rules for the fields:
 Read-only. The MVP list in `design/brief.md` is the baseline.
 
 1. No `design/brief.md`, or a brief with no MVP items: report `NOT ASSESSED` and stop.
-2. Gather what the project now contains: `git log` since the brief's last change, `TODO`/`FIXME` comments, and the feature folders, scenes and scripts present.
-3. Map each piece of work to the brief. An item is one player-visible feature or system; several commits or files for the same feature count once. A TODO counts only if it names new scope. Work that serves an MVP item without adding a new player-visible capability is not added. Count **added**: items in neither the MVP nor a reasonable part of it, or that touch an Out of scope item. Count **removed**: MVP items dropped or deferred.
+2. Gather what the project now contains: `git log` since the brief's last change (if the brief has no commit of its own, because it is untracked or uncommitted, use all history), `TODO`/`FIXME` comments, and the feature folders, scenes and scripts present. Features that are already in the game's first generated commit are the starting point, not work: do not count them.
+3. Map each piece of work to the brief. An item is one player-visible feature or system; several commits or files for the same feature count once. A TODO counts only if it names new scope. Work that serves an MVP item without adding a new player-visible capability is not added. Count **added**: items in neither the MVP nor a reasonable part of it, or that touch an Out of scope item. Count **removed**: MVP items dropped or deferred. An MVP item that files cannot prove (for example a timing or pacing rule) is listed as "not verifiable" and counts as neither present nor removed.
 4. Scope change = (added + removed) / number of MVP items in the brief.
 
 | Scope change | Verdict |
