@@ -13,7 +13,8 @@ screenshot comes from `game-smoke` (step 4). If it returns `Visual: NOT DONE`, t
 not done either; say so and name the blocker.
 
 Done means all three questions of step 4 are yes and `game-smoke` shows no new `FAIL` against the
-before run. Where its overall verdict and this rule disagree, step 4 says which `FAIL` is the art's.
+before run. A `FAIL` present in both the before and after runs does not block done for the art task;
+this overrides the `Caller:` line of `game-smoke` for that case only. Report that `FAIL` by name.
 
 ## Image tools
 
@@ -92,8 +93,12 @@ Each round is step 3 then step 4. Run `game-smoke` again for the same screens. R
 - Do touch targets and text stay clear of the art, with enough contrast (at least 4.5:1 for text,
   3:1 for large text)?
 
-Compare the `Verdict` lines of the before and after runs. A `FAIL` present in both is not caused by
-the art: say so and name it. A new `FAIL` is caused by it.
+Compare the before and after runs check by check, not by the `Verdict` line alone: a `FAIL` verdict
+can stay while a new failure hides in it. For tests, compare failing test names. The smoke report
+may give only counts, so read the names from `Builds/editmode.xml` and `Builds/playmode.xml` (the
+`<test-case>` elements with `result="Failed"`; keep a copy of the before run's, as the after run
+overwrites them). A `FAIL` present in both is not caused by the art: say so and name it. A new
+`FAIL`, or a new failing test, is caused by it.
 
 Then pick **one change** for what is worst. It is the next round's step 3. Maximum **three rounds**.
 After the third, only name the change and report what is left; do not loop "until it looks right".
