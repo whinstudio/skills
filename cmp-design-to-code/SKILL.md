@@ -62,7 +62,7 @@ font px = sp.
   UI state; `cmp-code-rules` requires loading, empty and error even when the design leaves one out.
 - Interactive session: ask about what the design does not show (a missing state, overflow of long
   text, what a tap does).
-- A choice the design leaves open and you must make (a derived state's colours, a transition): follow `cmp-design-rules`; the design's own values always win.
+- A choice the design leaves open and you must make (a derived state's colours): if `cmp-design-rules` is installed, follow it; the design's own values always win.
 - Headless run: derive a missing state from the boards that exist (same header, spacing and
   colours) and list it under `Assumptions`. Never fill a gap with your own "improvement".
 - The design's sample data (names, counts, prices) is sample data. Show real or fake data from

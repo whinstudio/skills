@@ -35,13 +35,14 @@ import androidx.compose.ui.graphics.toArgb
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.test.Test
 
 private fun oklch(l: Float, c: Float, hueDegrees: Float): Color {
     val h = hueDegrees * PI.toFloat() / 180f
     return Color(l, c * cos(h), c * sin(h), colorSpace = ColorSpaces.Oklab).convert(ColorSpaces.Srgb)
 }
 
-// oklch(0.54f, 0.16f, 45f).toArgb().toUInt().toString(16) gives the 0xAARRGGBB value
+class PrintRamp { @Test fun print() = println(oklch(0.54f, 0.16f, 45f).toArgb().toUInt().toString(16)) } // prints AARRGGBB
 ```
 
 A channel that lands on `00` or `ff` means the colour is outside sRGB and the hue will drift: lower the
@@ -68,10 +69,13 @@ ratio  = (Ylighter + 0.05) / (Ydarker + 0.05)
 
 Composite each channel: `result = alpha × foreground + (1 − alpha) × background`.
 
-In a project, add a test beside `ColorSchemeForTest` and keep it, so a later colour change cannot break
-contrast unnoticed:
+In a project with `CustomColorsPalette`, add a test in `core/designsystem/src/commonTest/` (beside
+`ColorSchemeForTest` where it exists) and keep it, so a later colour change cannot break contrast
+unnoticed. Without the palette, use the formula above.
 
 ```kotlin
+package <your package>.core.designsystem.theme
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
