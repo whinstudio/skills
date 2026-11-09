@@ -27,6 +27,7 @@ with `/<skill-name>`.
 | [`game-release`](./game-release) | Check a game against the store requirements with exact commands, write a verdict (`READY`, `NOT ASSESSED` or `NOT READY`), and write a short post-mortem after launch. |
 | [`cmp-feature`](./cmp-feature) | Add a screen, feature module or data source to a generated app — the contract, domain, data and presentation layers, ViewModel, navigation destination and Koin wiring. |
 | [`cmp-design-to-code`](./cmp-design-to-code) | Build or adjust UI from a provided design (exported boards, mockup or screenshot) by measuring it, mapping every value to a theme token and checking the result against the design. |
+| [`cmp-design-rules`](./cmp-design-rules) | Design rules for a generated app when no design dictates the choice — theme tokens, colour and contrast, typography, motion, interface copy, touch targets — and a review that ends in findings with file:line and severity. |
 | [`cmp-code-rules`](./cmp-code-rules) | Rules for every Kotlin change in a generated project — layering, visibility, Multiplatform limits, Compose state, Koin annotations, resources, accessibility — plus a self-review checklist. |
 | [`cmp-testing`](./cmp-testing) | Add or fix unit tests for ViewModels, use cases, repositories and mappers, and repair a test gate that is red, counts zero tests or hangs. |
 | [`cmp-maestro`](./cmp-maestro) | Write or repair Maestro flows, including the walkthrough used to record the demo video on Android and iOS, and add the test tags they select by. |
@@ -37,12 +38,12 @@ with `/<skill-name>`.
 | [`cmp-commit`](./cmp-commit) | On explicit request, split the work into atomic commits, run the finish gates and write Conventional Commits messages — committing only, never pushing unless asked. |
 
 **Models.** Skills that write application code (`cmp-code-rules`, `cmp-feature`,
-`cmp-design-to-code`, `cmp-backend`) run on your session model. Mechanical skills run in their own subagent on
+`cmp-design-to-code`, `cmp-design-rules`, `cmp-backend`) run on your session model. Mechanical skills run in their own subagent on
 Sonnet and return a short report (`cmp-gates`, `cmp-detekt`, `cmp-testing`, `cmp-maestro`, `game-smoke`);
 `cmp-commit`, `cmp-new-project`, `backend-new-project` and `game-new-project` run on Sonnet. `scripts/check-skills.sh`
 enforces these rules.
 
-`game-*` skills other than `game-new-project` are adapted from Claude Code Game Studios (MIT); see each skill's `LICENSE-UPSTREAM.md`.
+`game-*` skills other than `game-new-project` are adapted from Claude Code Game Studios (MIT); see each skill's `LICENSE-UPSTREAM.md`. `cmp-design-rules` is adapted from design-taste (MIT); see its `LICENSE-UPSTREAM.md`.
 
 **cmpose MCP.** The three `*-new-project` skills need the cmpose MCP server. If it is not
 connected, the skill asks nothing and prints the install command:
