@@ -59,7 +59,7 @@ Limits:
 
 ## Output
 
-- `qa/smoke-<date>.md`: a table per platform and the verdict `PASS`, `PASS WITH WARNINGS`, `FAIL` or
+- `qa/smoke-<run>.md`: a table per platform and the verdict `PASS`, `PASS WITH WARNINGS`, `FAIL` or
   `NOT ASSESSED`
 - `qa/evidence/android/`, `qa/evidence/ios/`: the PNGs the report cites
 

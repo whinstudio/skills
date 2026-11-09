@@ -97,22 +97,8 @@ With `~/.claude/skills/game-new-project/scripts/` present, run `build-android.sh
 `build-ios.sh <projectDir>`. They end in `OK:`, `FAIL:` or `SKIP:`. `SKIP:` exits 0 but built nothing:
 that is `NOT RUN` with its reason, and that platform's device checks are `NOT RUN`.
 
-Otherwise use the project's build script. `<ns>` is the full namespace after the
-`namespace` keyword in `Assets/Editor/Build/BuildScript.cs`, ending in `.Editor.Build`; without that
-file, Build is `NOT RUN`.
-
-```bash
-"$UNITY" -batchmode -nographics -quit -projectPath "$PWD" -buildTarget Android -executeMethod <ns>.BuildScript.BuildAndroid -cmposeOut "$PWD/Builds/game.apk" -logFile Builds/logs/android.log
-"$UNITY" -batchmode -nographics -quit -projectPath "$PWD" -buildTarget iOS -executeMethod <ns>.BuildScript.BuildIOS -cmposeOut "$PWD/Builds/ios" -cmposeSimulator -logFile Builds/logs/ios-unity.log
-```
-
-Each succeeded when its log has `CMPOSE_BUILD_RESULT` with `result=Succeeded`. For iOS, then in
-`Builds/ios` run `pod install` when there is a `Podfile`, and build with `-workspace Unity-iPhone.xcworkspace`
-in that case, `-project Unity-iPhone.xcodeproj` otherwise:
-
-```bash
-xcodebuild -workspace Unity-iPhone.xcworkspace -scheme Unity-iPhone -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ../ios-dd CODE_SIGNING_ALLOWED=NO build
-```
+Otherwise follow [build without scripts](references/build-without-scripts.md); without
+`Assets/Editor/Build/BuildScript.cs`, Build is `NOT RUN`.
 
 A failed build is `FAIL`; that platform's device checks are `NOT RUN`.
 
@@ -140,13 +126,15 @@ Below, `adb` and
 `wait-for-device`, which you poll instead. A step that hits the limit is retried once; hitting it
 again means that device is not usable: try another device (iOS: see below). When no usable device
 is left, that platform's device checks are `NOT RUN` with the reason "timeout" (not `FAIL`).
+A boot gets 5 minutes (`emulator`, `bootstatus`, the `wait-for-device` poll and the
+`sys.boot_completed` loop each); after that the device is not usable by the same rule.
 
 ```bash
 adb devices                                            # take a serial in state "device", emulator-NNNN first
 emulator -list-avds                                    # none attached: start one in the background
 emulator -avd <name> -no-snapshot-save                 # its serial is the new emulator-NNNN in adb devices
 adb -s <serial> wait-for-device
-adb -s <serial> shell getprop sys.boot_completed       # repeat until it prints 1
+adb -s <serial> shell getprop sys.boot_completed       # repeat until it prints 1, at most 5 minutes in all
 adb -s <serial> shell getprop ro.product.cpu.abilist   # must contain arm64-v8a
 ```
 
@@ -178,8 +166,8 @@ adb -s <serial> logcat -d -b crash         # any lines for this package are a cr
 
 An empty PNG (the adb server restarted, or the device went `offline`): run `adb devices`, wait until
 the serial is `device` again, and capture again. The wait is bounded, for example 6 tries 5 s apart;
-if the serial never reaches `device`, that device is not usable (the `NOT RUN` rule above). The
-serial is only ever an `emulator-NNNN`.
+if the serial never reaches `device`, that device is not usable (the `NOT RUN` rule above). Use the
+serial this run already chose.
 
 ```bash
 for i in 1 2 3 4 5 6; do adb devices | grep -q "^<serial>[[:space:]]*device$" && break; sleep 5; done
@@ -196,8 +184,8 @@ working on, or shut down, the other session's device. Foldables and other odd mo
 point scale, so prefer a plain iPhone.
 
 ```bash
-xcrun simctl list devices available        # a booted iPhone first, else the newest non-SE iPhone
-xcrun simctl bootstatus <udid> -b          # boots it and waits
+xcrun simctl list devices available        # the newest non-SE iPhone; boot your own
+xcrun simctl bootstatus <udid> -b          # boots it and waits, at most 5 minutes
 open -a Simulator                          # when a tap tool is available: it needs the Simulator window
 /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "<app>/Info.plist"
 xcrun simctl uninstall <udid> <bundleId>
@@ -256,11 +244,7 @@ Run each on each platform, and cite the PNG behind every visual result.
 | Mute key | Android: `adb -s <serial> shell input keyevent 164`, wait 2 s, `pidof`, capture, send 164 again to restore. Proves only that it survives the key. The volume panel can cover part of the screen, so this PNG is not visual evidence of the screen: use a capture taken without it. iOS: no command-line control, `NOT RUN` | Crash or freeze: `FAIL`. Add "silence when muted" to `Human checks` |
 | Dialogs | Read the first-launch PNGs for system permission or notification dialogs | Asked before the game has shown why: `WARN`. Blocks the game with no way past: `FAIL`. One you cannot dismiss: capture it, and checks behind it are `NOT RUN` |
 
-iOS point scale: the device's `deviceTypeIdentifier` is in `xcrun simctl list devices -j`; its
-`bundlePath` is in `xcrun simctl list devicetypes -j`. Then
-`/usr/libexec/PlistBuddy -c 'Print :capabilities:ScreenDimensionsCapability:main-screen-scale' "<bundlePath>/Contents/Resources/capabilities.plist"`
-prints the scale (`main-screen-width` and `main-screen-height` beside it are the main display's
-pixels). The file or key missing: the scale is unreadable.
+iOS point scale: [ios-point-scale](references/ios-point-scale.md).
 
 Compare before and after captures by reading both PNGs. Do not grant permissions from the command
 line; that hides what a player sees.
