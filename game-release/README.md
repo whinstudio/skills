@@ -42,7 +42,7 @@ to run it as the last step. Neither is required.
 - `qa/release-<date>.md`: one row per check, the owner rows, the verdict
 - `design/post-mortem.md`: goal vs result, what went well, what went badly, three lessons
 
-The skill changes nothing else in the project.
+The skill changes nothing else in the project, except `Builds/` and `Library/` when it builds the bundle.
 
 ## License
 
