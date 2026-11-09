@@ -50,7 +50,7 @@ Suggested targets when `design/brief.md` has `Session length` and `Revenue`: ask
 | `boosters[]` | `id` (`^[a-z][a-z0-9_]{0,31}$`, unique; the same pattern holds for extra ids and shop row ids), `price` (currency, 1 and up), `start` (given on first launch), `offer` (exactly `preRun` or `inRun`), `icon` |
 | `extras[]` | `id`, `kind` (`supply`, `wheel`, `login`, `custom`); at most 3; a ready kind listed exactly when its section exists |
 | `supply` | `freeCoins`, `freeHours` (above 0, up to 168), `adCoins[]` (ad rows in unlock order; resets at local midnight) |
-| `wheel` | `freeEvery` (1-1000; runs or won levels per free spin), `adSpinsPerDay` (0-100), `slices[]` each with `weight`, `coins`, optional `booster` and `count` |
+| `wheel` | `freeEvery` (1-1000; runs or won levels per free spin), `adSpinsPerDay` (0-100), `slices[]` each with `weight`, optional `coins` (default 0), `booster` and `count` (default 1); a slice needs `coins` above 0 or a `booster` |
 | `login` | exactly 7 days, each with optional `coins` (default 0), `booster` and `count`; a missed day restarts at day 1 |
 | `shop` (optional; absent is not a finding) | `kind` (`full` or `simple`), `rows[]` (up to 16): `id`, `usd` (store setup only, not read by the game), `coins`, `boosters` (id to count), `tag` (discount percent 1-99) |
 
