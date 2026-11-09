@@ -67,6 +67,8 @@ before every run.
 
 ## Versions
 
+Automated runs stay off the Mac's speakers without a version change: `CompassArtImporter.cs` also mutes batchmode Editor runs (log line `CMPOSE_AUDIO editor-muted=True`), and `CompassAutoPlay` sets the listener volume to 0 when the auto-play or `compass-capture` flag is on. The built game's audio does not change.
+
 Rules Compass does not need to know about keep the version: the tuning file and difficulty rules in `CLAUDE.md` (November 2026) are part of v8.
 
 - v7: `CompassUiShotTests` (UI screen shots for the design review); requires Compass with the Part 3 PR of the game UI atmosphere plan.
