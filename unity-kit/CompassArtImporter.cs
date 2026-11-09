@@ -277,3 +277,20 @@ public class CompassArtImporter : AssetPostprocessor
         }
     }
 }
+
+/// <summary>
+/// Compass unity-kit — do not edit in projects. Keeps batchmode Editor runs (the PlayMode gate, compass-unity play) off
+/// the Mac's speakers. Editor only, so the built game's audio does not change, and AudioSource state stays testable.
+/// </summary>
+[InitializeOnLoad]
+internal static class CompassBatchAudio
+{
+    public const string Marker = "CMPOSE_AUDIO editor-muted";
+
+    static CompassBatchAudio()
+    {
+        if (!Application.isBatchMode) return;
+        EditorUtility.audioMasterMute = true;
+        Debug.Log(Marker + "=" + EditorUtility.audioMasterMute);
+    }
+}
