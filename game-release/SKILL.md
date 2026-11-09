@@ -24,7 +24,10 @@ First match wins:
 
 1. `NOT READY`: any checked row is `FAIL`.
 2. `NOT ASSESSED`: any row is `NOT RUN`, or an owner row is unconfirmed. Name each one.
-3. `READY`: every row is `PASS` or `CONFIRMED`.
+3. `READY`: every row is `PASS`, `PASS (debug-signed)`, `WARN`, `stated`, `n/a` or `CONFIRMED`.
+
+`WARN`, `stated` and `n/a` never change the verdict. (`PASS (debug-signed)` counts as `PASS`; row 5
+fails in that case, so rule 1 applies first.)
 
 ## 0. Project
 
@@ -39,8 +42,8 @@ and `git rev-parse --short HEAD`; a dirty tree is stated in the report. The flag
 
 | # | Row | Check | FAIL when |
 |---|---|---|---|
-| 1 | Smoke report | Newest `qa/smoke-*.md`. Its verdict line and `Visual` line. Its `Commit` field (on the `Project:` line) against `git rev-parse --short HEAD`, and `find Assets ProjectSettings -newer <report>` | No report, or stale (the `Commit` field differs from HEAD, ignoring a `+ uncommitted` suffix, or the `find` prints any file), or overall verdict not `PASS` / `PASS WITH WARNINGS`, or `Visual` not `DONE` on a platform you ship |
-| 2 | Version | `bundleVersion` and `AndroidBundleVersionCode` in `ProjectSettings/ProjectSettings.asset`; the iOS `buildNumber` map in the same file. Ask the user once in this run whether the game was released before | A field is empty; or the game was released before and the version or code is the value of the last release (ask for it) or the template's `1.0.0` with code `1`. First release: `1.0.0` with code `1` is `PASS`. No answer to the question (for example a non-interactive run): `NOT RUN`, and the report says so. An iPhone `buildNumber` of `0` or empty is a `WARN` (stated in the report, not a failure): set it to 1 or higher before archiving |
+| 1 | Smoke report | Newest `qa/smoke-*.md`. Its verdict line and `Visual` line. Its `Commit` field (on the `Project:` line) against `git rev-parse --short HEAD`, and `find Assets ProjectSettings -type f -newer <report> -not -path 'Assets/Settings/*' -not -name ProjectSettings.asset -not -name GraphicsSettings.asset -not -name ShaderGraphSettings.asset`. Unity rewrites those excluded files by itself on every test run and build (row 6 included), so a change to them does not make the report stale | No report, or stale (the `Commit` field differs from HEAD, ignoring a `+ uncommitted` suffix, or the `find` prints any file; directories are not files), or overall verdict not `PASS` / `PASS WITH WARNINGS`, or `Visual` not `DONE` on a platform you ship |
+| 2 | Version | `bundleVersion` and `AndroidBundleVersionCode` in `ProjectSettings/ProjectSettings.asset`; the iOS `buildNumber` map in the same file. Ask the user once in this run whether the game was released before | A field other than the iPhone `buildNumber` is empty; or the game was released before and the version or code is the value of the last release (ask for it) or the template's `1.0.0` with code `1`. First release: `1.0.0` with code `1` is `PASS`. No answer to the question (for example a non-interactive run): `NOT RUN`, and the report says so. An iPhone `buildNumber` of `0` or empty is a `WARN` (stated in the report, not a failure): set it to 1 or higher before archiving |
 | 3 | Package and bundle id | `applicationIdentifier` (`Android` and `iPhone` lines) in the same file | An id starting `com.example.`, the template's own id. The two ids differing is a `WARN`, stated in the report |
 | 4 | Scripting and ABI | Under `scriptingBackend:` the `Android:` value is `1` (IL2CPP), and `AndroidTargetArchitectures` includes ARM64 (bit `2`) | `Android:` is `0` or the key is missing (Mono), or no ARM64 |
 | 5 | Android signing | `keystore.properties` exists, has non-empty `storeFile`, `storePassword`, `keyAlias`, `keyPassword`, and `storeFile` exists; when the file exists, `git check-ignore keystore.properties` prints it (with no file, skip this check: it prints the name anyway). Never print the passwords | Missing file or field: the build falls back to the debug key, which Google Play rejects. File not git-ignored |
