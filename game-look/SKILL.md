@@ -26,6 +26,16 @@ images the user supplies: ask for them, and run the same steps on those.
 Run `game-smoke` (pass the platform and the screens to cover). Keep the PNG paths it cites as the
 "before" set. Read the `Art direction` line of `design/brief.md` when it exists.
 
+The next `game-smoke` run deletes the test results, so copy the before run's now (a missing file is
+fine):
+
+```bash
+mkdir -p qa/look
+cp Builds/editmode.xml qa/look/before-editmode.xml 2>/dev/null
+cp Builds/playmode.xml qa/look/before-playmode.xml 2>/dev/null
+true
+```
+
 ## 2. Fix one reference image
 
 Exactly one image defines the look. Either the user names one, or you pick one existing asset (or
@@ -95,9 +105,9 @@ Each round is step 3 then step 4. Run `game-smoke` again for the same screens. R
 
 Compare the before and after runs check by check, not by the `Verdict` line alone: a `FAIL` verdict
 can stay while a new failure hides in it. For tests, compare failing test names. The smoke report
-may give only counts, so read the names from `Builds/editmode.xml` and `Builds/playmode.xml` (the
-`<test-case>` elements with `result="Failed"`; keep a copy of the before run's, as the after run
-overwrites them). A `FAIL` present in both is not caused by the art: say so and name it. A new
+may give only counts, so read the names from the `<test-case>` elements with `result="Failed"`:
+compare `qa/look/before-editmode.xml` and `qa/look/before-playmode.xml` (step 1) with the new
+`Builds/editmode.xml` and `Builds/playmode.xml`. A `FAIL` present in both is not caused by the art: say so and name it. A new
 `FAIL`, or a new failing test, is caused by it.
 
 Then pick **one change** for what is worst. It is the next round's step 3. Maximum **three rounds**.
