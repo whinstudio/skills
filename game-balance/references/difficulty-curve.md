@@ -43,4 +43,4 @@ A good curve rises, then eases after a hard point, then rises a little higher. A
 
 Fill numbers from the game's tuning assets (speeds, spawn rates, lives, level tables); a number you cannot find stays `(unset)`. Do not use live-service measures; only what one phone session shows.
 
-Check rules for difficulty: a row with a target is compared (win rate, time to first failure, time to first mastery); a row without is "no stated range, not judged". A new mechanic introduced in the same level as a rise of two or more points is a fact worth reporting.
+Check rules for difficulty (linked from SKILL.md, applied when asked to check difficulty): a row with a target is compared (win rate, time to first failure, time to first mastery); a row without is "no stated range, not judged". A new mechanic introduced in the same level as a rise of two or more points is a fact worth reporting.

@@ -46,12 +46,12 @@ Suggested targets when `design/brief.md` has `Session length` and `Revenue`: ask
 | Section | Fields |
 |---|---|
 | `currency` | `name` (1-24 chars), `color` (`#RRGGBB`), `icon` (optional path) |
-| `boosters[]` | `id`, `price` (currency, 1 and up), `start` (given on first launch), `offer` (`preRun` or `inRun`), `icon` |
+| `boosters[]` | `id`, `price` (currency, 1 and up), `start` (given on first launch), `offer` (exactly `preRun` or `inRun`), `icon` |
 | `extras[]` | `id`, `kind` (`supply`, `wheel`, `login`, `custom`); at most 3; a ready kind listed exactly when its section exists |
-| `supply` | `freeCoins`, `freeHours` (up to 168), `adCoins[]` (ad rows in unlock order; resets at local midnight) |
+| `supply` | `freeCoins`, `freeHours` (above 0, up to 168), `adCoins[]` (ad rows in unlock order; resets at local midnight) |
 | `wheel` | `freeEvery` (runs or won levels per free spin), `adSpinsPerDay` (0-100), `slices[]` each with `weight`, `coins`, optional `booster` and `count` |
 | `login` | exactly 7 days, each `coins` and an optional `booster` and `count`; a missed day restarts at day 1 |
-| `shop` | `kind` (`full` or `simple`), `rows[]` (up to 16): `id`, `usd` (store setup only, not read by the game), `coins`, `boosters` (id to count), `tag` (discount percent 1-99) |
+| `shop` (optional; absent is not a finding) | `kind` (`full` or `simple`), `rows[]` (up to 16): `id`, `usd` (store setup only, not read by the game), `coins`, `boosters` (id to count), `tag` (discount percent 1-99) |
 
 Template facts you can rely on: rewarded ads give currency only through an extra; every rewarded ad counts towards a daily cap kept in the template's code; a booster in stock is used at once, otherwise it is offered for currency or for one rewarded ad per booster per run (used at once, never stocked); a shop row that pays nothing is Remove Ads; wheel odds are listed by the "i" button. A broken file turns the whole economy off, so a file that fails to parse is a finding, not a number to judge.
 

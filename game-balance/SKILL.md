@@ -36,21 +36,23 @@ Read the data and the targets, then follow this order.
 - a `shop` row with no `coins` and no `boosters` that is not `remove_ads`;
 - a booster with `start` 0 and no way to get it (no price reachable, not in a shop row, not a wheel or login reward).
 
-**2. Compare with targets.** For every value in the template that has a stated target, write the value, the target, and `within` or `outside`. A value without a target is listed as "no stated range, not judged" and never counts against the verdict. Do not guess what is typical.
+**2. Compare with targets.** For every value in the template that has a stated target, write the value, the target, and `within` or `outside`, with the gap. Gap: for a range, measure against the nearer bound (bounds count as within); for "at most" or "at least", against that limit; for a single value, against it. Gap percent = distance divided by the target. A value without a target is listed as "no stated range, not judged". A target the file cannot answer (for example minutes to the first purchase, when earnings live in game code) is listed as "not computable from the file". Neither counts towards the verdict. Do not guess what is typical.
 
 **3. Fairness rules**, checked against the data:
-- No pay-to-win: no shop row sells a power the free player cannot also earn with the currency or a free source. A booster only in `shop` rows and nowhere else is a finding.
-- Rewarded ads give currency only through an extra (`supply.adCoins`, `wheel.adSpinsPerDay`, a custom extra). A rewarded ad has a daily cap in the template's code (not in the file); report the file's per-day ad exposure (`adCoins` rows plus `adSpinsPerDay`) and compare it with a stated limit, if any.
-- Wheel odds are visible: the template's "i" button lists every slice's odds. A game that replaced the wheel with its own code: check its odds are shown.
+- No pay-to-win, as far as the file shows: a booster, or the currency itself, reachable only through `shop` rows (no `start`, no wheel or login slice, no price in currency) is a finding. What the booster does in play is game code and is not judged here.
+- Rewarded ads give currency only through an extra (`supply.adCoins`, `wheel.adSpinsPerDay`, a custom extra). The daily cap is in the template's code, not the file. Ad exposure per day counts `adCoins` rows plus `adSpinsPerDay` only; in-run booster ads are per run and are not counted (say so). Compare with a stated limit, if any.
+- Wheel odds are visible: the template's "i" button lists every slice's odds. A game that replaced the wheel with its own code: check its odds are shown. Wheel and login booster slices are listed but not valued in coins.
 - No timer pressure on essential items: `supply.freeHours` and countdowns apply to extras, never to something the player needs to continue. A "limited time" label on a shop row (`tag` is a discount percent) must not be the only way to get an item the game needs.
 
-**4. Verdict**, exactly one:
-- `NOT ASSESSED — NO DATA`: no `GameEconomy.json`, no tuning data, or no value has a target. Say what is missing in one line.
-- `UNBALANCED`: one or more outside-target values, or one or more fairness rule broken, and the gap is larger than the target's own width.
-- `CONCERNS`: any smaller outside-target gap, or any fact from step 1.
-- `BALANCED`: at least one value had a target, all are within, no fact from step 1, no fairness finding.
+Difficulty is a separate check against `design/difficulty.md`: [difficulty-curve](references/difficulty-curve.md) has its rules; its verdict uses the same list below, on its own values.
 
-The verdict is the worst one that applies. Two agents with the same data must reach the same one.
+**4. Verdict**, exactly one; the first that matches:
+- `NOT ASSESSED — NO DATA`: no file, or no value has a target, or the file does not parse. Name the reason. Facts from the file are still listed. On an empty project give only the verdict and one line offering the template, no full report.
+- `UNBALANCED`: any value outside its target by more than 50% of the target.
+- `CONCERNS`: any value outside its target by 50% or less, any step 1 fact, or any fairness finding.
+- `BALANCED`: at least one value judged, all within target, no fact, no fairness finding.
+
+Two agents with the same data must reach the same one.
 
 ## Output
 
@@ -62,6 +64,7 @@ The verdict is the worst one that applies. Two agents with the same data must re
 | Value | Now | Target | Result |
 ## Not judged
 - <value>: no stated range, not judged
+- <value>: not computable from the file
 ## Fairness
 ## What to change first (at most 3, each tied to a value)
 ```
@@ -70,4 +73,4 @@ Report findings in the conversation; write the file only for `check save`.
 
 ## Boundaries
 
-Mobile session numbers only: minutes per session, runs to the first purchase, ad rows per day. No live-service measures. Do not edit `GameEconomy.json` or any game file; propose the change and let the user make it (or ask the compass planner to rewrite the file).
+Mobile session numbers only: minutes per session, runs to the first purchase, ad rows per day. No live-service measures. Do not edit `GameEconomy.json` or any game file; propose the change and let the user make it (or have the file regenerated by whatever wrote it).
