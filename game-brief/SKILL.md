@@ -1,6 +1,6 @@
 ---
 name: game-brief
-description: Use when someone is starting a Unity 6 mobile game or asks what to prepare before code, wants a game brief, pitch, MVP list or pillars, or asks whether a game's scope has crept or whether a new feature still fits. Two modes - write the brief, or run a scope check against it.
+description: Use when someone is starting a Unity 6 mobile game or asks what to prepare before code, wants a game brief, pitch, MVP list or pillars, or asks whether a game's scope has crept or whether a new feature still fits.
 argument-hint: "[brief <idea> | scope-check]"
 ---
 
@@ -10,11 +10,13 @@ Two modes. `brief` writes **one file, `design/brief.md`, that fits one screen**.
 
 ## Mode: brief
 
-The output is the filled template below and nothing else: no other documents, no analysis before or after it. Tell the user the file path and the three guesses you are least sure of.
+The output is the filled template below and nothing else: no other documents, no analysis before or after it. Tell the user the file path and the three `(guess)` markers you are least sure of.
 
-**Asking.** From the request, fill everything you can. Ask only what cannot be inferred, in one short message with at most four questions. For anything still open, write a guess marked `(guess)` in the file so the user can correct it. Do not ask for a field you can reasonably propose.
+**Where.** Normally `design/brief.md` (create `design/` if missing). If there is no Unity project yet, write `brief.md` in the current folder and tell the user to move it to `design/brief.md` after `game-new-project`. If `design/brief.md` already exists, show what would change and ask before overwriting.
 
-**Template** for `design/brief.md` (create `design/` if missing):
+**Asking.** From the request, fill everything you can. Ask only what cannot be inferred, in one short message with at most four questions. If the genre or the camera (2D or 3D) cannot be inferred, ask about it even when the user says "go ahead". Everything else still open becomes a guess marked `(guess)` in the file so the user can correct it. Do not ask for a field you can reasonably propose.
+
+**Template** for the brief (at most 60 lines):
 
 ```markdown
 # <Working title>
@@ -30,7 +32,7 @@ The output is the filled template below and nothing else: no other documents, no
 ## MVP (7 items at most)
 - <feature without which this is not the game>
 
-## Out of scope
+## Out of scope (5 items at most)
 - <specific thing not being built>
 
 ## Build order
@@ -44,18 +46,18 @@ The output is the filled template below and nothing else: no other documents, no
 
 **For whom / feel:** <player and the feeling, one line>
 **Art direction:** <one line>
-**Reference game:** <game> - the MVP keeps about <N>% of it: <which part>
+**Reference game:** <game> - the MVP keeps about <N>% of it: <which part> | none (drop the percentage)
 
 ## Mobile
-**Orientation:** portrait
-**One-handed:** yes
+**Orientation:** portrait | landscape
+**One-handed:** yes | no
 **Session length:** <e.g. 2-3 minutes>
-**Revenue:** ads | IAP | none
-**Stores:** Google Play, App Store
+**Revenue:** ads | IAP | none | undecided
+**Stores:** Google Play | App Store | both
 ```
 
 Rules for the fields:
-- `**Orientation:**` is exactly `portrait` or `landscape`, on its own line. `game-smoke` reads it.
+- `**Orientation:**` is exactly `portrait` or `landscape`, on its own line, never with a `(guess)` marker, because `game-smoke` reads it. A guessed orientation goes in the guesses you report to the user.
 - A pillar is falsifiable and removes options ("one finger, never two" not "fun controls").
 - Each build-order step is something the player can try; the first one proves the loop is fun.
 - The reference game percentage is the honest size of the MVP against a shipped game.
@@ -65,12 +67,12 @@ Rules for the fields:
 
 Read-only. The MVP list in `design/brief.md` is the baseline.
 
-1. No `design/brief.md`: report `NOT ASSESSED` and stop.
+1. No `design/brief.md`, or a brief with no MVP items: report `NOT ASSESSED` and stop.
 2. Gather what the project now contains: `git log` since the brief's last change, `TODO`/`FIXME` comments, and the feature folders, scenes and scripts present.
-3. Map each piece of work to the brief. Count **added**: work that is in neither the MVP nor a reasonable part of it, or that touches an Out of scope item. Count **removed**: MVP items dropped or deferred.
-4. Net change = (added + removed) / MVP item count.
+3. Map each piece of work to the brief. An item is one player-visible feature or system; several commits or files for the same feature count once. A TODO counts only if it names new scope. Work that serves an MVP item without adding a new player-visible capability is not added. Count **added**: items in neither the MVP nor a reasonable part of it, or that touch an Out of scope item. Count **removed**: MVP items dropped or deferred.
+4. Scope change = (added + removed) / number of MVP items in the brief.
 
-| Net change | Verdict |
+| Scope change | Verdict |
 |---|---|
 | 10% or less | `PASS` |
 | above 10%, up to 25% | `CONCERNS` |

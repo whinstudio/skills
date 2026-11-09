@@ -34,7 +34,7 @@ The skill asks only what it cannot infer, in one message, and marks its own gues
 ## Scope check
 
 Compares `git log`, TODO comments and project files with the brief's MVP and out-of-scope lists, and
-counts items added and removed. Net change of 10% or less is `PASS`, up to 25% `CONCERNS`, above
+counts items (player-visible features) added and removed against the MVP count. Scope change of 10% or less is `PASS`, up to 25% `CONCERNS`, above
 that `FAIL`. Without a brief the result is `NOT ASSESSED`. It writes no file.
 
 ## Output
