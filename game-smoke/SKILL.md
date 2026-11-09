@@ -11,10 +11,12 @@ argument-hint: "[android|ios] [screen or change to check]"
 # Game smoke
 
 You run in your own subagent. The session that called you sees only your final report, not your
-tool output, and you did not see its conversation. You report; you do not fix. Do not edit tracked
+tool output, and you did not see its conversation. If you cannot fork, run this skill's steps
+yourself in the current session. You report; you do not fix. Do not edit tracked
 project files; reports go under `qa/`, build output under `Builds/`. Unity itself rewrites some
 tracked files (for example under `Assets/Settings`) when tests and builds run; that is expected.
-Report those ` M` files under `Findings` and leave them, do not revert or commit them.
+Run `git status --short` at the start and list under `Findings` only the files that changed during
+the run; leave them, do not revert or commit them.
 
 ## The visual rule
 
@@ -130,7 +132,10 @@ Below, `adb`, `emulator` and `aapt2` stand for those full paths. Every `adb` com
 Run every `adb` and `simctl` step with a 60 s limit by prefixing it with
 `perl -e 'alarm 60; exec @ARGV' --` (perl ships with macOS; `timeout` does not). It kills the
 command after 60 s with exit status 142, and redirects such as `> file` still work, for example
-`perl -e 'alarm 60; exec @ARGV' -- xcrun simctl uninstall <udid> <bundleId>`. Below, `adb` and
+`perl -e 'alarm 60; exec @ARGV' -- xcrun simctl uninstall <udid> <bundleId>`. A capture counts as
+an adb step, for example
+`perl -e 'alarm 60; exec @ARGV' -- adb -s <serial> exec-out screencap -p > qa/evidence/android/<run>-01-launch.png`.
+Below, `adb` and
 `xcrun simctl` steps are shown without the prefix. Not the `emulator` or `bootstatus` boot, and not
 `wait-for-device`, which you poll instead. A step that hits the limit is retried once; hitting it
 again means that device is not usable: try another device (iOS: see below). When no usable device
@@ -172,7 +177,13 @@ adb -s <serial> logcat -d -b crash         # any lines for this package are a cr
 ```
 
 An empty PNG (the adb server restarted, or the device went `offline`): run `adb devices`, wait until
-the serial is `device` again, and capture again.
+the serial is `device` again, and capture again. The wait is bounded, for example 6 tries 5 s apart;
+if the serial never reaches `device`, that device is not usable (the `NOT RUN` rule above). The
+serial is only ever an `emulator-NNNN`.
+
+```bash
+for i in 1 2 3 4 5 6; do adb devices | grep -q "^<serial>[[:space:]]*device$" && break; sleep 5; done
+```
 
 On a physical device skip `uninstall`, and Dialogs is `NOT RUN`.
 
@@ -240,7 +251,7 @@ Run each on each platform, and cite the PNG behind every visual result.
 | Touch targets | Estimate each control's size in real PNG pixels (section 4, Both). Android: dp = px x 160 / density, from `adb -s <serial> shell wm density`, minimum 48 dp. iOS: pt = px / scale, with the scale read from the device (see below); never assume 3. Scale unreadable: the check is `NOT RUN`. Minimum 44 pt | Primary control clearly under the minimum (under 80% of it: 38 dp, 35 pt): `FAIL`. Any other shortfall: `WARN` |
 | Thumb zone | Portrait: primary action in the lower half. Landscape: at the lower left or right | Outside: `WARN` |
 | Tap | Android: pick the primary button's centre, scaled to real PNG pixels (section 4, Both), `adb -s <serial> shell input tap <x> <y>`, wait 2 s, capture, compare. No change: retry once with `adb -s <serial> shell input swipe <x> <y> <x> <y> 150`. iOS: `simctl` has no tap command (do not invent one). With a tool that can tap in the Simulator window, first run `open -a Simulator`, then tap there; otherwise this is `NOT RUN` | Still no change: `FAIL`. Use taps to reach the changed screen; when it cannot be reached, its visual check is `NOT RUN` |
-| Back key | Android: `adb -s <serial> shell input keyevent 4`, wait 2 s, `pidof`, capture. iOS: `n/a` | Crash or stuck screen: `FAIL`. Ignored, or quits from gameplay without asking: `WARN` |
+| Back key | Android: `adb -s <serial> shell input keyevent 4`, wait 2 s, `pidof`, capture. iOS: `n/a` | Crash, or stuck (no response to the next tap, or the pid is gone): `FAIL`. Ignored (the screen is unchanged, the pid is the same and the next tap works), or quits from gameplay without asking: `WARN` |
 | Background and return | Android: note `pidof`, `input keyevent 3`, wait 3 s, the `monkey` launch again, wait 3 s, `pidof`, capture. iOS: `xcrun simctl launch <udid> com.apple.Preferences`, wait 3 s, `xcrun simctl launch <udid> <bundleId>`, compare the printed pids, capture | New pid, crash or black screen: `FAIL` |
 | Mute key | Android: `adb -s <serial> shell input keyevent 164`, wait 2 s, `pidof`, capture, send 164 again to restore. Proves only that it survives the key. The volume panel can cover part of the screen, so this PNG is not visual evidence of the screen: use a capture taken without it. iOS: no command-line control, `NOT RUN` | Crash or freeze: `FAIL`. Add "silence when muted" to `Human checks` |
 | Dialogs | Read the first-launch PNGs for system permission or notification dialogs | Asked before the game has shown why: `WARN`. Blocks the game with no way past: `FAIL`. One you cannot dismiss: capture it, and checks behind it are `NOT RUN` |
