@@ -127,10 +127,14 @@ The APK is the path in the `OK: APK` line (or the `-cmposeOut` path). The iOS ap
 is the newest directory in `$ANDROID_HOME/build-tools` (`ls "$ANDROID_HOME/build-tools" | sort -V | tail -1`).
 Below, `adb`, `emulator` and `aapt2` stand for those full paths. Every `adb` command names its serial.
 
-Run every `adb` and `simctl` step with a 60 s limit (`timeout 60`, or `gtimeout 60` from coreutils;
-without either, background the command, poll it and kill it after 60 s). Not the `emulator` or
-`bootstatus` boot, and not `wait-for-device`, which you poll instead. A step that hits the limit is
-killed and retried once; if it hits it again, that device is not usable (see iOS for the fallback).
+Run every `adb` and `simctl` step with a 60 s limit by prefixing it with
+`perl -e 'alarm 60; exec @ARGV' --` (perl ships with macOS; `timeout` does not). It kills the
+command after 60 s with exit status 142, and redirects such as `> file` still work, for example
+`perl -e 'alarm 60; exec @ARGV' -- xcrun simctl uninstall <udid> <bundleId>`. Below, `adb` and
+`xcrun simctl` steps are shown without the prefix. Not the `emulator` or `bootstatus` boot, and not
+`wait-for-device`, which you poll instead. A step that hits the limit is retried once; hitting it
+again means that device is not usable: try another device (iOS: see below). When no usable device
+is left, that platform's device checks are `NOT RUN` with the reason "timeout" (not `FAIL`).
 
 ```bash
 adb devices                                            # take a serial in state "device", emulator-NNNN first
@@ -176,7 +180,7 @@ On a physical device skip `uninstall`, and Dialogs is `NOT RUN`.
 
 Prefer a simulator this run boots. A simulator that is already booted may belong to another session
 and may hang. If an `install`, `uninstall` or `launch` on a device you did not start hits the 60 s
-limit, kill the command, boot a different available iPhone yourself and use that one; never keep
+limit again after the retry, boot a different available iPhone yourself and use that one; never keep
 working on, or shut down, the other session's device. Foldables and other odd models have no known
 point scale, so prefer a plain iPhone.
 
@@ -201,7 +205,7 @@ Wait at least 10 seconds after launch before the first capture. A system tip ove
 Android's "Viewing full screen / Got it") is not a permission dialog: dismiss it with a tap on its
 button (Tap row, section 5), capture again and go on. Name files
 `<run>-NN-<what-it-shows>.png`. Confirm each with `file <path>` (PNG, not empty), then Read it. An
-install or launch error is `FAIL`.
+install or launch error is `FAIL`; a step that only times out (above) is not, it is `NOT RUN`.
 
 The Read tool may show a downscaled PNG, so coordinates seen in it are not device pixels. Before a tap
 or a touch-target measurement, read the real size and multiply what you measured by real width /
@@ -233,13 +237,19 @@ Run each on each platform, and cite the PNG behind every visual result.
 | Screen | Read the launch PNG. A single colour, the splash or the home screen: poll, capturing every 10 s until the screen changes, for up to 90 s (a heavy first menu can take over 30 s). Do not stop at the first unchanged capture | Still so, or process died, or crash lines: `FAIL`, and the remaining checks are `NOT RUN` |
 | Orientation | The `orientation` field of `design/brief.md` against the PNG; judge by which way text and UI read | Mismatch `FAIL`. No file or field: `NOT ASSESSED` |
 | Safe area | Text and controls clear of the notch or Dynamic Island, status bar and home indicator. Use a device that has a cutout | Control or text covered: `FAIL`. Android AVD without a cutout: `NOT ASSESSED` |
-| Touch targets | Estimate each control's size in real PNG pixels (section 4, Both). Android: dp = px x 160 / density, from `adb -s <serial> shell wm density`, minimum 48 dp. iOS: pt = px / scale, with the scale read from the device (the display's pixel size from `xcrun simctl io <udid> enumerate` against its point size, or the device type's profile); never assume 3. Scale unreadable: the check is `NOT RUN`. Minimum 44 pt | Primary control clearly under the minimum (under 80% of it: 38 dp, 35 pt): `FAIL`. Any other shortfall: `WARN` |
+| Touch targets | Estimate each control's size in real PNG pixels (section 4, Both). Android: dp = px x 160 / density, from `adb -s <serial> shell wm density`, minimum 48 dp. iOS: pt = px / scale, with the scale read from the device (see below); never assume 3. Scale unreadable: the check is `NOT RUN`. Minimum 44 pt | Primary control clearly under the minimum (under 80% of it: 38 dp, 35 pt): `FAIL`. Any other shortfall: `WARN` |
 | Thumb zone | Portrait: primary action in the lower half. Landscape: at the lower left or right | Outside: `WARN` |
 | Tap | Android: pick the primary button's centre, scaled to real PNG pixels (section 4, Both), `adb -s <serial> shell input tap <x> <y>`, wait 2 s, capture, compare. No change: retry once with `adb -s <serial> shell input swipe <x> <y> <x> <y> 150`. iOS: `simctl` has no tap command (do not invent one). With a tool that can tap in the Simulator window, first run `open -a Simulator`, then tap there; otherwise this is `NOT RUN` | Still no change: `FAIL`. Use taps to reach the changed screen; when it cannot be reached, its visual check is `NOT RUN` |
 | Back key | Android: `adb -s <serial> shell input keyevent 4`, wait 2 s, `pidof`, capture. iOS: `n/a` | Crash or stuck screen: `FAIL`. Ignored, or quits from gameplay without asking: `WARN` |
 | Background and return | Android: note `pidof`, `input keyevent 3`, wait 3 s, the `monkey` launch again, wait 3 s, `pidof`, capture. iOS: `xcrun simctl launch <udid> com.apple.Preferences`, wait 3 s, `xcrun simctl launch <udid> <bundleId>`, compare the printed pids, capture | New pid, crash or black screen: `FAIL` |
 | Mute key | Android: `adb -s <serial> shell input keyevent 164`, wait 2 s, `pidof`, capture, send 164 again to restore. Proves only that it survives the key. The volume panel can cover part of the screen, so this PNG is not visual evidence of the screen: use a capture taken without it. iOS: no command-line control, `NOT RUN` | Crash or freeze: `FAIL`. Add "silence when muted" to `Human checks` |
 | Dialogs | Read the first-launch PNGs for system permission or notification dialogs | Asked before the game has shown why: `WARN`. Blocks the game with no way past: `FAIL`. One you cannot dismiss: capture it, and checks behind it are `NOT RUN` |
+
+iOS point scale: the device's `deviceTypeIdentifier` is in `xcrun simctl list devices -j`; its
+`bundlePath` is in `xcrun simctl list devicetypes -j`. Then
+`/usr/libexec/PlistBuddy -c 'Print :capabilities:ScreenDimensionsCapability:main-screen-scale' "<bundlePath>/Contents/Resources/capabilities.plist"`
+prints the scale (`main-screen-width` and `main-screen-height` beside it are the main display's
+pixels). The file or key missing: the scale is unreadable.
 
 Compare before and after captures by reading both PNGs. Do not grant permissions from the command
 line; that hides what a player sees.
