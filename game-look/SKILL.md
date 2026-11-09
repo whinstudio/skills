@@ -9,7 +9,7 @@ One reference image, one page of rules, every new asset made from both, and a de
 before and after. Without a fixed reference each asset drifts from the last one.
 
 **A visual task is not done without a screenshot.** The editor's Game view does not count. The
-screenshot comes from `game-smoke` (step 4). If it returns `Visual: NOT DONE`, this skill's work is
+screenshot comes from `game-smoke` (step 4). If it returns `Visual: NOT DONE` on a requested platform, this skill's work is
 not done either; say so and name the blocker.
 
 Done means all three questions of step 4 are yes and `game-smoke` shows no new `FAIL` against the
@@ -107,7 +107,7 @@ Compare the before and after runs check by check, not by the `Verdict` line alon
 can stay while a new failure hides in it. For tests, compare failing test names. The smoke report
 may give only counts, so read the names from the `<test-case>` elements with `result="Failed"`:
 compare `qa/look/before-editmode.xml` and `qa/look/before-playmode.xml` (step 1) with the new
-`Builds/editmode.xml` and `Builds/playmode.xml`. A `FAIL` present in both is not caused by the art: say so and name it. A new
+`Builds/editmode.xml` and `Builds/playmode.xml`. With no before copy of a test XML, every failing test in the new XML counts as new. A `FAIL` present in both is not caused by the art: say so and name it. A new
 `FAIL`, or a new failing test, is caused by it.
 
 Then pick **one change** for what is worst. It is the next round's step 3. Maximum **three rounds**.
@@ -116,6 +116,7 @@ After the third, only name the change and report what is left; do not loop "unti
 ## Report
 
 - the reference image path and `design/look.md`
+- a `BLOCKED:` line from step 2, when one was reported
 - the rounds run and the one change of each
 - the before and after device screenshots, by path
 - what is left, and anything `game-smoke` marked `NOT RUN` or `NOT ASSESSED`

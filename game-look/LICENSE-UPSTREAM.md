@@ -1,6 +1,6 @@
 # Upstream license
 
-The rule that a visual task is not done without a screenshot is adapted from Claude Code Game Studios.
+The rule that a visual task is not done without a screenshot is adapted and shortened for Unity 6 mobile from Claude Code Game Studios.
 The loop itself (reference image, one page of rules, one change per round, at most three rounds) is an
 original adaptation of a publicly described idea; no text is copied.
 
