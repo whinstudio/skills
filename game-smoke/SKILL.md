@@ -11,8 +11,8 @@ argument-hint: "[android|ios] [screen or change to check]"
 # Game smoke
 
 You run in your own subagent. The session that called you sees only your final report, not your
-tool output, and you did not see its conversation. You report; you do not fix. Write only under
-`qa/` and `Builds/`.
+tool output, and you did not see its conversation. You report; you do not fix. Do not edit tracked
+project files; reports go under `qa/`, build output under `Builds/`.
 
 ## The visual rule
 
@@ -60,16 +60,18 @@ Caller's request: "$ARGUMENTS"
   Not a Unity project, or a version not starting with `6000.`: stop, final message `NOT ASSESSED`
   with the reason, write nothing.
 - Editor binary (`$UNITY` below): `$UNITY_EDITOR`, else `/Applications/Unity/Hub/Editor/<version>/Unity.app/Contents/MacOS/Unity`.
+- When `Temp/UnityLockfile` exists the project is open in the Unity editor. Never kill Unity. Stop
+  before tests and builds, write no report, and send the final message with `Verdict: NOT ASSESSED`,
+  `Visual: NOT DONE - close the Unity editor and run again`, and the `Caller:` line of section 6. A
+  build script's `SKIP:` for the same lockfile is the same stop.
 - `<run>` is `date +%F`, with `-2`, `-3` appended when `qa/smoke-<run>.md` already exists. Then
   `mkdir -p Builds/logs qa/evidence/android qa/evidence/ios`.
-- When `Temp/UnityLockfile` exists the project is open in Unity. Tests, builds and device checks are
-  `NOT RUN` ("close Unity and re-run"). Never kill Unity.
 - Unity builds can pass ten minutes: run every Unity, build-script and `xcodebuild` command in the background and
   wait for it to exit. One at a time; Unity cannot open a project twice.
 
 ## 2. Tests
 
-For EditMode, then PlayMode, exactly as below (no `-quit`; Unity exits by itself):
+EditMode exactly as below (no `-quit`; Unity exits by itself):
 
 ```bash
 rm -f Builds/editmode.xml
@@ -77,7 +79,9 @@ rm -f Builds/editmode.xml
 grep -m1 '<test-run' Builds/editmode.xml
 ```
 
-Read `total` and `failed` on that line. `failed` above 0: `FAIL`. `total` 0: `NOT ASSESSED`. No XML:
+Then PlayMode: the same commands with `-testPlatform PlayMode`, `Builds/playmode.xml` and `playmode.log`.
+
+For each, read `total` and `failed` on that line. `failed` above 0: `FAIL`. `total` 0: `NOT ASSESSED`. No XML:
 `FAIL` with the first `error CS` line of the log, or `NOT RUN` with the last log lines when there is none.
 A test failure does not stop the run.
 
@@ -89,8 +93,9 @@ With `~/.claude/skills/game-new-project/scripts/` present, run `build-android.sh
 `build-ios.sh <projectDir>`. They end in `OK:`, `FAIL:` or `SKIP:`. `SKIP:` exits 0 but built nothing:
 that is `NOT RUN` with its reason, and that platform's device checks are `NOT RUN`.
 
-Otherwise use the project's build script. `<ns>` is the `namespace` line of
-`Assets/Editor/Build/BuildScript.cs`; without that file, Build is `NOT RUN`.
+Otherwise use the project's build script. `<ns>` is the full namespace after the
+`namespace` keyword in `Assets/Editor/Build/BuildScript.cs`, ending in `.Editor.Build`; without that
+file, Build is `NOT RUN`.
 
 ```bash
 "$UNITY" -batchmode -nographics -quit -projectPath "$PWD" -buildTarget Android -executeMethod <ns>.BuildScript.BuildAndroid -cmposeOut "$PWD/Builds/game.apk" -logFile Builds/logs/android.log
@@ -129,11 +134,15 @@ adb -s <serial> shell getprop ro.product.cpu.abilist   # must contain arm64-v8a
 The APK is IL2CPP ARM64. A device without `arm64-v8a` cannot install it: try another, else Android
 device checks are `NOT RUN` with the ABI list. No device can be booted: same, with the command's error.
 
-Package name: the `Android:` value printed by the first command, confirmed after install by `pm path`.
-When that is empty or `pm path` prints nothing, use the second command's `package: name='...'`.
+`emulator -list-avds` printing nothing means Android is `NOT RUN`, with the report line "create an
+arm64 AVD in Android Studio". Do not create one automatically.
+
+Package name: the first command prints one line, `    Android: <package>`, confirmed after install by
+`pm path`. `ProjectSettings.asset` has other `Android:` lines, so keep the `sed` range. When the
+line is missing or `pm path` prints nothing, use the second command's `package: name='...'`.
 
 ```bash
-grep -A4 '^  applicationIdentifier:' ProjectSettings/ProjectSettings.asset
+sed -n '/^  applicationIdentifier:/,/^  [^ ]/p' ProjectSettings/ProjectSettings.asset | grep -E '^    Android:'
 $ANDROID_HOME/build-tools/<version>/aapt2 dump badging <apk> | head -n 1
 ```
 
@@ -164,17 +173,29 @@ xcrun simctl io <udid> screenshot qa/evidence/ios/<run>-01-launch.png
 
 ### Both
 
-Wait at least 10 seconds between launch and capture: a shell cannot count frames, and 60 rendered
-frames have to come after the splash. Name files `<run>-NN-<what-it-shows>.png`. Confirm each with
-`file <path>` (PNG, not empty), then Read it. An install or launch error is `FAIL`.
+Wait at least 10 seconds after launch before the first capture. Name files
+`<run>-NN-<what-it-shows>.png`. Confirm each with `file <path>` (PNG, not empty), then Read it. An
+install or launch error is `FAIL`.
+
+The Read tool may show a downscaled PNG, so coordinates seen in it are not device pixels. Before a tap
+or a touch-target measurement, read the real size and multiply what you measured by real width /
+displayed width. When the displayed width is unknown, work in fractions of the image and multiply
+them by the real size.
+
+```bash
+sips -g pixelWidth -g pixelHeight <png>
+```
 
 ### Closing, after section 5
+
+Remember which emulator or simulator this run started. Skip `emu kill` and `simctl shutdown` for any
+device this run did not start.
 
 ```bash
 adb -s <serial> shell am force-stop <package>
 xcrun simctl terminate <udid> <bundleId>
-adb -s <serial> emu kill                   # only an emulator this run started
-xcrun simctl shutdown <udid>               # only a simulator this run started
+adb -s <serial> emu kill
+xcrun simctl shutdown <udid>
 ```
 
 ## 5. Checks
@@ -186,9 +207,9 @@ Run each on each platform, and cite the PNG behind every visual result.
 | Screen | Read the launch PNG. A single colour, the splash or the home screen: wait 10 s and capture again, up to 60 s | Still so, or process died, or crash lines: `FAIL`, and the remaining checks are `NOT RUN` |
 | Orientation | The `orientation` field of `design/brief.md` against the PNG; judge by which way text and UI read | Mismatch `FAIL`. No file or field: `NOT ASSESSED` |
 | Safe area | Text and controls clear of the notch or Dynamic Island, status bar and home indicator. Use a device that has a cutout | Control or text covered: `FAIL`. Android AVD without a cutout: `NOT ASSESSED` |
-| Touch targets | Estimate each control's size in the PNG. Android: dp = px x 160 / density, from `adb -s <serial> shell wm density`, minimum 48 dp. iOS: pt = px / 3 (iPhones since the 12, except SE), minimum 44 pt | Primary control below minimum: `FAIL`. Any other: `WARN` |
+| Touch targets | Estimate each control's size in real PNG pixels (section 4, Both). Android: dp = px x 160 / density, from `adb -s <serial> shell wm density`, minimum 48 dp. iOS: pt = px / 3 (iPhones since the 12, except SE), minimum 44 pt | Primary control clearly under the minimum (under 80% of it: 38 dp, 35 pt): `FAIL`. Any other shortfall: `WARN` |
 | Thumb zone | Portrait: primary action in the lower half. Landscape: at the lower left or right | Outside: `WARN` |
-| Tap | Android: pick the primary button's centre in PNG pixels, `adb -s <serial> shell input tap <x> <y>`, wait 2 s, capture, compare. No change: retry once with `adb -s <serial> shell input swipe <x> <y> <x> <y> 150`. iOS: `simctl` has no tap command, so this is `NOT RUN` unless this session has a tool that can tap in the Simulator window | Still no change: `FAIL`. Use taps to reach the changed screen; when it cannot be reached, its visual check is `NOT RUN` |
+| Tap | Android: pick the primary button's centre, scaled to real PNG pixels (section 4, Both), `adb -s <serial> shell input tap <x> <y>`, wait 2 s, capture, compare. No change: retry once with `adb -s <serial> shell input swipe <x> <y> <x> <y> 150`. iOS: `simctl` has no tap command, so this is `NOT RUN` unless this session has a tool that can tap in the Simulator window | Still no change: `FAIL`. Use taps to reach the changed screen; when it cannot be reached, its visual check is `NOT RUN` |
 | Back key | Android: `adb -s <serial> shell input keyevent 4`, wait 2 s, `pidof`, capture. iOS: `n/a` | Crash or stuck screen: `FAIL`. Ignored, or quits from gameplay without asking: `WARN` |
 | Background and return | Android: note `pidof`, `input keyevent 3`, wait 3 s, the `monkey` launch again, wait 3 s, `pidof`, capture. iOS: `xcrun simctl launch <udid> com.apple.Preferences`, wait 3 s, `xcrun simctl launch <udid> <bundleId>`, compare the printed pids, capture | New pid, crash or black screen: `FAIL` |
 | Mute key | Android: `adb -s <serial> shell input keyevent 164`, wait 2 s, `pidof`, capture, send 164 again to restore. Proves only that it survives the key. iOS: no command-line control, `NOT RUN` | Crash or freeze: `FAIL`. Add "silence when muted" to `Human checks` |
@@ -202,9 +223,11 @@ line; that hides what a player sees.
 Per platform, the first match wins:
 
 1. `FAIL`: any check is `FAIL`.
-2. `NOT ASSESSED`: tests, build, launch or the launch PNG is `NOT RUN` or `NOT ASSESSED`.
-3. `PASS WITH WARNINGS`: any `WARN`, or any other check `NOT RUN` or `NOT ASSESSED`. Those stay
-   listed by name; they are gaps, not passes.
+2. `NOT ASSESSED`: build, launch or the launch PNG is `NOT RUN` or `NOT ASSESSED`. Nothing else can
+   give this verdict.
+3. `PASS WITH WARNINGS`: any `WARN`, or any other check `NOT RUN` or `NOT ASSESSED`, tests included
+   (zero tests stays `NOT ASSESSED` on its own line). Each is named on the `Gaps` line; they are
+   gaps, not passes.
 4. `PASS`: every check `PASS` or `n/a`.
 
 Overall is the worse platform, in that order. Write `qa/smoke-<run>.md`, leaving out a platform
@@ -225,8 +248,9 @@ Devices: Android <serial, model, API> | iOS <device, runtime>
 | Screen | PASS - qa/evidence/android/<run>-01-launch.png | NOT RUN |
 | <one row per other check in section 5> | | |
 
-Verdict: Android NOT ASSESSED | iOS NOT ASSESSED | Overall NOT ASSESSED
+Verdict: Android PASS WITH WARNINGS | iOS NOT ASSESSED | Overall NOT ASSESSED
 Visual: Android DONE - <PNG path>, shows <what> | iOS NOT DONE - <step and error>
+Gaps: Android PlayMode tests (0 tests) | iOS PlayMode tests (0 tests)
 
 ## Findings
 ## Human checks
@@ -236,7 +260,15 @@ Visual: Android DONE - <PNG path>, shows <what> | iOS NOT DONE - <step and error
 no screen was named. One `Findings` entry per `FAIL`, in the [bug-report](references/bug-report.md) format.
 
 Your final message, nothing else: the `Verdict` and `Visual` lines, one line per `FAIL`, `NOT RUN`
-or `NOT ASSESSED` check with its reason, and the report path. No raw logs.
+or `NOT ASSESSED` check with its reason, the report path, and a last line starting `Caller:` with
+what the caller may say. No raw logs.
+
+### What the caller may say
+
+The work may be called done only when `Visual` is `DONE` on every requested platform and the overall
+verdict is `PASS` or `PASS WITH WARNINGS`. Anything else is reported as not verified, naming the
+blocker. If the user cannot wait, the caller says "looks right in the editor, not verified on a
+device" and finishes the run afterwards.
 
 ## Never
 
