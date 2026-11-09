@@ -37,19 +37,18 @@ and `git rev-parse --short HEAD`; a dirty tree is stated in the report.
 | # | Row | Check | FAIL when |
 |---|---|---|---|
 | 1 | Smoke report | Newest `qa/smoke-*.md`. Its verdict line and `Visual` line. Its date against `git log -1 --format=%cI -- Assets ProjectSettings` | No report, or older than that commit, or overall verdict not `PASS` / `PASS WITH WARNINGS`, or `Visual` not `DONE` on a platform you ship |
-| 2 | Version | `bundleVersion` and `AndroidBundleVersionCode` in `ProjectSettings/ProjectSettings.asset`; the iOS `buildNumber` map in the same file | Version is the template's `1.0.0` with code `1` on a game that was already released (ask), or a field is empty |
-| 3 | Package and bundle id | `applicationIdentifier` in the same file | An id still carrying the template's namespace (compare with `Assets/Editor/Build/BuildScript.cs` namespace and the name in `design/brief.md`) |
-| 4 | Scripting and ABI | `scriptingBackend` is IL2CPP (`1`) and `AndroidTargetArchitectures` includes ARM64 (bit `2`) in `ProjectSettings.asset` | Mono, or no ARM64 |
+| 2 | Version | `bundleVersion` and `AndroidBundleVersionCode` in `ProjectSettings/ProjectSettings.asset`; the iOS `buildNumber` map in the same file. Ask the user once in this run whether the game was released before | A field is empty; or the game was released before and the version or code is the value of the last release (ask for it) or the template's `1.0.0` with code `1`. No answer to the question: `NOT RUN` |
+| 3 | Package and bundle id | `applicationIdentifier` (`Android` and `iPhone` lines) in the same file | An id starting `com.example.`, the template's own id. The two ids differing is a `WARN`, stated in the report |
+| 4 | Scripting and ABI | Under `scriptingBackend:` the `Android:` value is `1` (IL2CPP), and `AndroidTargetArchitectures` includes ARM64 (bit `2`) | `Android:` is `0` or the key is missing (Mono), or no ARM64 |
 | 5 | Android signing | `keystore.properties` exists, has non-empty `storeFile`, `storePassword`, `keyAlias`, `keyPassword`, and `storeFile` exists; `git check-ignore keystore.properties` prints it. Never print the passwords | Missing file or field: the build falls back to the debug key, which Google Play rejects. File not git-ignored |
 | 6 | Android bundle | Build with `-cmposeAab` (see below). The log has `CMPOSE_BUILD_RESULT` with `result=Succeeded` and the `.aab` exists | Build failed or no `.aab` |
-| 7 | Test IDs gone: ads | In `Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset` and `Assets/_Project/Core/Ads/AdsConfig.cs`: grep `3940256099942544` (Google's sample publisher id) | Any hit. Files absent because the game has no ads flag: `n/a` |
+| 7 | Test IDs gone: ads | In `Assets/_Project/Core/Ads/AdsConfig.cs` check only the unit-id constants (`Banner*`, `Interstitial*`, `Rewarded*`, form `ca-app-pub-<publisher>/<unit>`) for the publisher `3940256099942544`; ignore `GoogleTestPublisher` and the tests, which hold it on purpose. Separately, in `Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset` check `adMobAndroidAppId` and `adMobIOSAppId` (form `ca-app-pub-<publisher>~<app>`, with a `~`) for the same publisher | Any such constant or app id carries it. Report which form each file holds. Files absent because the game has no ads flag: `n/a` |
 | 8 | Test IDs gone: purchases | `ApiKeyApple` starts `appl_` and `ApiKeyGoogle` starts `goog_` in `Assets/_Project/Core/Purchases/PurchasesConfig.cs`, and `PremiumEntitlement` is set | A key that does not start so (the template ships RevenueCat's Test Store key, and release builds keep purchases off). No purchases flag: `n/a` |
-| 9 | Release log lines | In the release build's log or the smoke run's `Builds/logs`: `CMPOSE_ADS available=true` with no "test IDs" warning, `CMPOSE_PURCHASES available=true`, `CMPOSE_INSIGHTS available=true` | A line says `available=false` or the warning is present. Line not in any log: `NOT RUN`, not `PASS` |
+| 9 | Release log lines | The running game prints `CMPOSE_ADS available=true` (no "test IDs" warning), `CMPOSE_PURCHASES available=true` and `CMPOSE_INSIGHTS available=true`; the batch build does not. Look for a saved device log of a release build under `qa/` or `Builds/logs` (grep the markers), no older than the last commit touching `Assets/` or `ProjectSettings/` (`git log -1 --format=%cI -- Assets ProjectSettings`). `game-smoke` keeps only Unity and build logs and PNGs, so such a log exists only when someone saved one, for example `adb -s <serial> logcat -d -s Unity` | A fresh log shows `available=false` or the warning. No such log: `NOT RUN`, never `PASS`; say that the owner confirms them on a real device |
 | 10 | Privacy manifest | `Assets/Plugins/iOS/PrivacyInfo.xcprivacy` exists and parses: `plutil -lint <file>` | Missing or does not parse |
 | 11 | Firebase files | With the insights flag: `Assets/Firebase/google-services.json` and `Assets/Firebase/GoogleService-Info.plist` exist, and their package name and bundle id match row 3 | Missing or mismatching. No insights flag: `n/a` |
-| 12 | Store images | See the owner rows: app icon, screenshots and feature graphic are judged by the owner | Not a checked row |
-| 13 | Build size | Size of the `.aab` from row 6 (`ls -l`) | Over the budget the owner names. No budget given: the size is stated and is not a failure |
-| 14 | Uncommitted work | `git status --short` | Not a FAIL; state it, because the smoke report row 1 compares against commits |
+| 12 | Build size | Size of the `.aab` from row 6 (`ls -l`) | Over the budget the owner names. No budget given: the size is stated and is not a failure |
+| 13 | Uncommitted work | `git status --short` | Not a FAIL; state it, because the smoke report (row 1) compares against commits |
 
 ### Android bundle command
 
@@ -58,11 +57,12 @@ and `git rev-parse --short HEAD`; a dirty tree is stated in the report.
 then `NOT RUN`. Run in the background and wait; it can take ten minutes.
 
 ```bash
+mkdir -p Builds/logs
 "$UNITY" -batchmode -nographics -quit -projectPath "$PWD" -buildTarget Android -executeMethod <ns>.BuildScript.BuildAndroid -cmposeOut "$PWD/Builds/game.aab" -cmposeAab -logFile Builds/logs/release-android.log
 grep CMPOSE_BUILD_RESULT Builds/logs/release-android.log
 ```
 
-`$UNITY` is `$UNITY_EDITOR`, else `/Applications/Unity/Hub/Editor/<version>/Unity.app/Contents/MacOS/Unity`.
+`$UNITY` is `$UNITY_EDITOR`, else `/Applications/Unity/Hub/Editor/<version>/Unity.app/Contents/MacOS/Unity`, with `<version>` read from `m_EditorVersion` in `ProjectSettings/ProjectVersion.txt`.
 Without `keystore.properties` this still builds, signed with the debug key; row 5 is the failure.
 
 ### iOS
@@ -84,7 +84,7 @@ List each with what the owner must do. Unconfirmed means `NOT ASSESSED`.
 | Account deletion | Only when the game has accounts or sign-in: the deletion path inside the app and the Play Console deletion URL |
 | Privacy policy | Published, linked in both stores and from inside the game |
 | Age rating | Questionnaires answered in both consoles |
-| Store listing | Title, description, app icon, screenshots and the Play feature graphic; screenshots for the sizes App Store Connect asks for |
+| Store images and listing | App icon (not Unity's default), title, description, screenshots and the Play feature graphic; screenshots for the sizes App Store Connect asks for |
 | Store products | With purchases: products, the `premium` entitlement and the `shop` offering set up in RevenueCat and in both stores |
 | Real device | The release build installed and played on at least one real Android phone and one real iPhone, not only emulators |
 | Native symbols | With insights: Android symbols uploaded (`firebase crashlytics:symbols:upload`), as the template README describes |
