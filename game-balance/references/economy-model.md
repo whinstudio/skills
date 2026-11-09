@@ -39,20 +39,21 @@ Write this into `design/economy.md`. Keep it to one screen; `(unset)` where nobo
 - Rewarded ads are optional and capped per day.
 ```
 
-Suggested targets when `design/brief.md` has `Session length` and `Revenue`: ask the user, and offer a starting value marked `(proposal)`. A proposal is not a target until the user accepts it.
+Suggested targets when `design/brief.md` has `Session length` and `Revenue`: ask the user, and offer a starting value marked `(proposal)`. A proposal is not a target until the user accepts it; unattended, it never counts.
 
 ## `GameEconomy.json` (version 1)
 
 | Section | Fields |
 |---|---|
+| `version` | required, the number 1; any other value or a missing one makes the file fail to parse |
 | `currency` | `name` (1-24 chars), `color` (`#RRGGBB`), `icon` (optional path) |
-| `boosters[]` | `id`, `price` (currency, 1 and up), `start` (given on first launch), `offer` (exactly `preRun` or `inRun`), `icon` |
+| `boosters[]` | `id` (`^[a-z][a-z0-9_]{0,31}$`, unique; the same pattern holds for extra ids and shop row ids), `price` (currency, 1 and up), `start` (given on first launch), `offer` (exactly `preRun` or `inRun`), `icon` |
 | `extras[]` | `id`, `kind` (`supply`, `wheel`, `login`, `custom`); at most 3; a ready kind listed exactly when its section exists |
 | `supply` | `freeCoins`, `freeHours` (above 0, up to 168), `adCoins[]` (ad rows in unlock order; resets at local midnight) |
-| `wheel` | `freeEvery` (runs or won levels per free spin), `adSpinsPerDay` (0-100), `slices[]` each with `weight`, `coins`, optional `booster` and `count` |
-| `login` | exactly 7 days, each `coins` and an optional `booster` and `count`; a missed day restarts at day 1 |
+| `wheel` | `freeEvery` (1-1000; runs or won levels per free spin), `adSpinsPerDay` (0-100), `slices[]` each with `weight`, `coins`, optional `booster` and `count` |
+| `login` | exactly 7 days, each with optional `coins` (default 0), `booster` and `count`; a missed day restarts at day 1 |
 | `shop` (optional; absent is not a finding) | `kind` (`full` or `simple`), `rows[]` (up to 16): `id`, `usd` (store setup only, not read by the game), `coins`, `boosters` (id to count), `tag` (discount percent 1-99) |
 
-Template facts you can rely on: rewarded ads give currency only through an extra; every rewarded ad counts towards a daily cap kept in the template's code; a booster in stock is used at once, otherwise it is offered for currency or for one rewarded ad per booster per run (used at once, never stocked); a shop row that pays nothing is Remove Ads; wheel odds are listed by the "i" button. A broken file turns the whole economy off, so a file that fails to parse is a finding, not a number to judge.
+Template facts you can rely on: rewarded ads give currency only through an extra; every rewarded ad counts towards a daily cap kept in the template's code; a booster in stock is used at once, otherwise it is offered for currency or for one rewarded ad per booster per run (used at once, never stocked); a shop row that pays nothing is Remove Ads; wheel odds are listed by the "i" button. Every booster needs a name and description string, the currency a name string, and each custom extra a name string, in every language the game ships (en, tr, fr, es, it in the template); `EconomyStringsTests` fails otherwise. A broken file turns the whole economy off, so a file that fails to parse is a finding, not a number to judge.
 
 Wheel odds from the file: a slice's chance is its `weight` divided by the sum of all weights. Expected coins per spin is the sum of `coins` times chance (boosters counted separately).
