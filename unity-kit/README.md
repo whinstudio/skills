@@ -27,7 +27,8 @@ sprites get that nine-slice border and a full-rect mesh, as the template's tiled
 sets the default, iOS and Android (adaptive, legacy, round) icons, turns the "Made with Unity" splash off, reads it
 back and logs `COMPASS_BRANDING ok` or `COMPASS_BRANDING failed: <reason>` (exit 1). When the file has `logo` (a
 texture path, `Assets/_Project/Resources/Branding/title-logo.png` from Compass), the iOS launch screen (iPhone and
-iPad, "image and background, relative", 60 %) and the Android static splash (centred) show that logo on the
+iPad, "image and background, relative") and the Android static splash (centred, from a generated
+`Assets/_Project/Branding/android-splash.png` with transparent margins) show that logo at 70 % of the screen width on the
 `splashBackground` colour while the engine loads. The launch screen colours, sizes and the Android image are written
 to the serialized player settings, as Unity 6 (6000.3) has no public setter for them. Without `logo` the template's
 launch screen stays. Android 12+ draws its system splash from the adaptive icon before either. Older kits ignore
