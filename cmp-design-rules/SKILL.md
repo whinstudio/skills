@@ -63,13 +63,15 @@ What the template does and what that means for a restyle:
   `NavigationBar` reads `surfaceContainer`. Map a role in `colorSchemeFor` before using a component
   that reads it. Do not paint over it with `colors = ...` at the call site.
 - `ColorSchemeForTest` pins the mapping, including that `error` and `secondary` stay on the baseline
-  and `primary` is `tintBlack`. Change the test in the same commit as the mapping, or `allTests` fails.
-- `primary` is `tintBlack`, which also tints icons on every screen. Do not recolour `tintBlack` to
+  and `primary` is `tintPrimary`. Change the test in the same commit as the mapping, or `allTests` fails.
+- `primary` is `tintPrimary`, which also tints icons on every screen. Do not recolour `tintPrimary` to
   get an accent. Add an `accent` and `onAccent` field and map `primary` and `onPrimary` to them.
 - Palette fields default to `Color.Unspecified`, so a field set in one palette only still compiles.
   Set every new field in both.
-- Existing names are literal (`textBlack` is white in dark mode). Leave them; a rename touches every
-  screen and changes nothing on it. Name new fields for their job (`accent`, `surfaceRaised`).
+- Fields are named for their job (`textPrimary`, `textSecondary`, `tintPrimary`, `tintSecondary`);
+  name new ones the same way (`accent`, `surfaceRaised`). Projects generated before cmpose 3.0.0 call
+  them `textBlack`, `textGray`, `tintBlack` and `tintGrey` (`textBlack` is white in dark mode). Read
+  them as those roles; renaming them touches every screen and changes nothing on it.
 - `KtTheme` passes no typography or shapes. Add `typography =` and `shapes =` to its `MaterialTheme` call.
 
 Spacing and shape:
@@ -114,9 +116,9 @@ background also goes into `window_background` in `androidApp/src/main/res/values
 Placeholder text counts as text. Disabled controls are exempt. A container whose label already identifies
 the control needs no 3:1 edge (a segmented control's frame); an input field does.
 
-Compute every pair; a ratio cannot be judged by eye. On the template, grey that looks weak in dark
-mode passes and grey that looks fine in light mode fails: `textGray` is 5.02:1 on dark and 3.05:1
-on light. A warm orange such as `#E8590C` with white text is 3.58:1, so it fails as a button label.
+Compute every pair; a ratio cannot be judged by eye. In projects generated before cmpose 3.0.0, grey
+that looks weak in dark mode passes and grey that looks fine in light mode fails: `textGray` is 5.02:1
+on dark and 3.05:1 on light (3.0.0 darkens the light one to `#646E79`, 5.19:1). A warm orange such as `#E8590C` with white text is 3.58:1, so it fails as a button label.
 Formula, a Kotlin check and a test: [references/color.md](references/color.md). Check both modes,
 and a semi-transparent colour only after compositing it on its real background.
 

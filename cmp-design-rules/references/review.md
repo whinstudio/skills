@@ -38,7 +38,7 @@ call site. Any other cause is one row per file. In a headless run, put `Assumpti
 ```
 | # | Severity | Location | Rule | Finding | Fix |
 |---|---|---|---|---|---|
-| 1 | High | core/designsystem/.../theme/CustomColorsPalette.kt:32 | Contrast | textGray #8B959E on #FFFFFF is 3.05:1, needs 4.5:1 | Darken to pass; #6B7580 is 4.69:1 |
+| 1 | High | core/designsystem/.../theme/CustomColorsPalette.kt:32 | Contrast | textSecondary #8B959E on #FFFFFF is 3.05:1, needs 4.5:1 | Darken to pass; #6B7580 is 4.69:1 |
 ```
 
 | Severity | Means |
