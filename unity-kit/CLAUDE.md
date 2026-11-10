@@ -108,7 +108,10 @@ themes", "Game shell" and "Game world: presentation and juice" before writing UI
     Give such a window (level select, shop, a picker) a card with a fixed height in reference units (bands of the 1920
     tall portrait reference), never a fraction of the screen height, and add a `KitFitScale`
     (`Core/Presentation/Kit/KitFitScale.cs`) like the template's own modals. On a landscape or short screen the whole
-    card then shrinks, instead of its fixed-height rows squeezing into each other. Check it at 1920x1080 as well as
+    card then shrinks, instead of its fixed-height rows squeezing into each other. By default the card is bounded to
+    86% of the safe area's width and 80% of its height in portrait, 58% and 88% in landscape, and keeps a margin on each
+    side; it scales down to fit and never up, so do not size it past those shares expecting more room. A card with its
+    own sizing rule opts out with `SetBounded(false)` and keeps only the margin. Check it at 1920x1080 as well as
     1080x1920.
   - Use the plan's flow: call `Begin(ShellMode.Endless)` or `Begin(ShellMode.Levels)` first.
   - During play: `SetScore`, `SetBest`, `SetCounter`, `Toast(key)` (e.g. `"shell.perfect"`),
