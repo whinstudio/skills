@@ -69,9 +69,11 @@ ratio  = (Ylighter + 0.05) / (Ydarker + 0.05)
 
 Composite each channel: `result = alpha × foreground + (1 − alpha) × background`.
 
-In a project with `CustomColorsPalette`, add a test in `core/designsystem/src/commonTest/` (beside
-`ColorSchemeForTest` where it exists) and keep it, so a later colour change cannot break contrast
-unnoticed. Without the palette, use the formula above.
+In a project with `CustomColorsPalette`, keep a contrast test in `core/designsystem/src/commonTest/`,
+so a later colour change cannot break contrast unnoticed. If the project already has
+`PaletteContrastTest` (the 3.0.0 template ships one in `core/designsystem/src/commonTest/.../theme/`),
+add the new assertions to it; create the class below (beside `ColorSchemeForTest` where it exists) only
+when it does not exist. Without the palette, use the formula above.
 
 ```kotlin
 package <your package>.core.designsystem.theme
