@@ -147,6 +147,9 @@ public class CompassUiShotTests
     private IEnumerator OpenGame()
     {
         SceneManager.LoadScene("Boot");
+        // LoadScene takes effect on the next frame: opened again from the game scene, the wait below must not see the
+        // old game scene as the new one
+        yield return null;
         var deadline = Time.realtimeSinceStartup + TimeoutSeconds;
         while (SceneManager.GetActiveScene().name != MenuScene && SceneManager.GetActiveScene().name != GameScene
                && Time.realtimeSinceStartup < deadline) yield return null;
