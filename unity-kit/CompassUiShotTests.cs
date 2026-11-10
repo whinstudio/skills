@@ -47,6 +47,12 @@ public class CompassUiShotTests
 
     private static readonly string[] EconomyViews = { "SupplyWindowView", "WheelWindowView", "LoginBonusView" };
 
+    // The shell's end cards: one opens over the HUD when the AutoPlayer's run ends
+    private static readonly string[] EndCards = { "GameOverCard", "LevelCompleteCard", "LevelFailedCard" };
+
+    // Times the game is opened for the HUD and Pause shots when its run keeps ending before them
+    private const int RunAttempts = 3;
+
     private readonly List<string> failedRequired = new List<string>();
     private readonly List<GameObject> hiddenInspectors = new List<GameObject>();
     private bool languageSet;
@@ -96,14 +102,22 @@ public class CompassUiShotTests
         yield return Shot(folder, "economy", false, OpenEconomy, PanelSeconds, () => Expect(EconomyViews), true, width, height);
 
         SetAutoPlay(true);
-        yield return OpenGame();
-        var guide = Try(Do(HideGuide));
-        if (guide != null) Debug.Log($"{Marker} guide: {guide}");
-        yield return new WaitForSecondsRealtime(PanelSeconds);
-        yield return Shot(folder, "hud", true, null, 0f, null, false, width, height);
+        // The HUD and Pause shots need a run in progress: when the AutoPlayer's run ended while the HUD settled (an end
+        // card open), the game is opened again, up to RunAttempts times; an end card still open fails both shots
+        // instead of passing a picture of the card
+        for (var attempt = 1; ; attempt++)
+        {
+            yield return OpenGame();
+            var guide = Try(Do(HideGuide));
+            if (guide != null) Debug.Log($"{Marker} guide: {guide}");
+            yield return new WaitForSecondsRealtime(PanelSeconds);
+            if (OpenViews(EndCards).Count == 0 || attempt == RunAttempts) break;
+            Debug.Log($"{Marker} run ended before the HUD shot, opening the game again ({attempt}/{RunAttempts})");
+        }
+        yield return Shot(folder, "hud", true, null, 0f, NoEndCard, false, width, height);
 
         yield return Shot(folder, "pause", true, Do(() => Raise(FindView("PauseView", true), "PauseClicked")),
-            PanelSeconds, () => Expect("PauseView"), false, width, height);
+            PanelSeconds, () => Expect("PauseView") ?? NoEndCard(), false, width, height);
         var resumed = Try(Do(() => Raise(FindView("PauseView", true), "ResumeClicked")));
         if (resumed != null) Debug.Log($"{Marker} resume: {resumed}");
 
@@ -133,6 +147,9 @@ public class CompassUiShotTests
     private IEnumerator OpenGame()
     {
         SceneManager.LoadScene("Boot");
+        // LoadScene takes effect on the next frame: opened again from the game scene, the wait below must not see the
+        // old game scene as the new one
+        yield return null;
         var deadline = Time.realtimeSinceStartup + TimeoutSeconds;
         while (SceneManager.GetActiveScene().name != MenuScene && SceneManager.GetActiveScene().name != GameScene
                && Time.realtimeSinceStartup < deadline) yield return null;
@@ -253,6 +270,13 @@ public class CompassUiShotTests
             yield return null;
         }
         cleared[0] = OpenViews(OverlayViews).Count == 0;
+    }
+
+    /// <summary>Null while no end card is open, else "&lt;card&gt; open": the run ended under the shot.</summary>
+    private static string NoEndCard()
+    {
+        var open = OpenViews(EndCards);
+        return open.Count == 0 ? null : $"{open[0].GetType().Name} open: the run ended";
     }
 
     /// <summary>Null when a view of one of these types is open, else "&lt;view&gt; not open".</summary>

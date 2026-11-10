@@ -53,7 +53,9 @@ AutoPlayer has not opened the game scene 8 s after the menu) the game scene's `u
 selects the language through the template's `LanguageSelector` (so the settings' language row shows it too; the stored
 `lang.code` choice is restored afterwards), hides the network inspector's overlay while it draws, closes a shop or
 economy window left open before each screen (and the shop and economy window right after their own shot), and
-counts a screen as failed when its view (settings panel, pause panel, end card) is not open. Each screen is drawn with
+counts a screen as failed when its view (settings panel, pause panel, end card) is not open. When the AutoPlayer's run
+has ended before `ui-hud` (an end card open), it opens the game again, up to 3 times; `ui-hud` and `ui-pause` fail
+while an end card is still open, so neither passes a picture of the card. Each screen is drawn with
 the overlay canvases moved onto the camera, so the world stays behind the HUD. Game types (`MenuView`, `PauseView`,
 `ILocalizer`, `IShop`, `IEconomyWindows`, `IGameShell`) are found by simple name, as generated games rename the
 template's namespaces; services are resolved from the loaded `LifetimeScope`s. It logs one `COMPASS_UI_SHOT <name>
