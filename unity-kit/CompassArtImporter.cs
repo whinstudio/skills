@@ -23,7 +23,6 @@ public class CompassArtImporter : AssetPostprocessor
     public const string IconsRoot = "Assets/_Project/Branding/Icons/";
     public const string SettingsPath = "Assets/_Project/Compass/compass-art.json";
     private const string ResourcesRoot = "Assets/_Project/Resources/";
-    private const string MenuBackground = "menu-background";
     private const int DefaultPixelsPerUnit = 100;
 
     [Serializable]
@@ -61,10 +60,8 @@ public class CompassArtImporter : AssetPostprocessor
         }
         if (path.StartsWith(BrandingRoot, StringComparison.Ordinal))
         {
-            var top = ReadSettings()?.Top;
-            // The menu background is a render of the game scene: pixel games keep it crisp; the logo is smooth art
-            var pixelArt = Path.GetFileNameWithoutExtension(path) == MenuBackground && top != null && top.pixel;
-            ImportSprite(importer, pixelArt, DefaultPixelsPerUnit);
+            // The logo is smooth art and the template blurs the menu background still on import, pixel game or not
+            ImportSprite(importer, false, DefaultPixelsPerUnit);
             return;
         }
         if (!path.StartsWith(ArtRoot, StringComparison.Ordinal)) return;
