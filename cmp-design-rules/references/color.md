@@ -54,7 +54,7 @@ and the accent moves to about 300 to 400. Check every result in the next section
 
 ## Check a pair
 
-1. Composite first. A colour with alpha has no contrast of its own: `textGray` in the dark palette is
+1. Composite first. A colour with alpha has no contrast of its own: `textSecondary` in the dark palette is
    `0x80FFFFFF`, which is 50% white on whatever is behind it. `Color.luminance()` ignores alpha.
 2. Compute the luminance of each colour, then the ratio.
 
@@ -95,13 +95,14 @@ class PaletteContrastTest {
     @Test
     fun mutedTextIsReadableInBothModes() {
         listOf(OnLightColorsPalette, OnDarkColorsPalette).forEach { palette ->
-            val ratio = contrast(palette.textGray, palette.backgroundColor)
-            assertTrue(ratio >= 4.5f, "textGray on backgroundColor is $ratio")
+            val ratio = contrast(palette.textSecondary, palette.backgroundColor)
+            assertTrue(ratio >= 4.5f, "textSecondary on backgroundColor is $ratio")
         }
     }
 }
 ```
 
-Add one assertion per pair the screens use. On the template as generated this test fails for the light
-palette (3.05:1) until `textGray` is darkened. Text on a filled accent is the pair most often missed:
+Add one assertion per pair the screens use. In a project generated before cmpose 3.0.0 (where the field
+is `textGray`) this test fails for the light palette (3.05:1) until the grey is darkened; the 3.0.0
+template passes (5.19:1) and ships a `PaletteContrastTest` of its own. Text on a filled accent is the pair most often missed:
 `onPrimary` on `primary`.
