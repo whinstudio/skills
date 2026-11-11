@@ -47,7 +47,7 @@ enforces these rules.
 
 **cmpose MCP.** The three `*-new-project` skills need the cmpose MCP server. If it is not
 connected, the skill asks nothing and prints the install command:
-`claude mcp add cmpose -- npx -y @cmpose/mcp@3.0.0`. All three show the same
+`claude mcp add cmpose -- npx -y @cmpose/mcp@3.0.1`. All three show the same
 pinned command (from `cmp-new-project/reference/contract.json`); `scripts/check-skills.sh` keeps
 them in step.
 
