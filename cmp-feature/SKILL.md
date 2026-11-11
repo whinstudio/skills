@@ -102,6 +102,8 @@ through callbacks or a passed-down `NavController`.
   - With the backend (`feature/account` exists): a way from the app's own screens (a settings or
     profile entry) to `AccountSettingsDestination`. It holds account deletion and the privacy and
     terms links; App Store and Google Play reject an app with accounts but no in-app deletion.
+    Reference `AccountSettingsDestination` directly; the `FeatureEntry` list GuideScreen showed
+    does not count.
   - With insights (`core/insights` exists): keep `InsightsConsentDialog` in `MainScreen.kt` and
     put `InsightsConsentSettings` (the analytics and crash report switches) in the app's own
     settings screen; GuideScreen's About dialog held them.
