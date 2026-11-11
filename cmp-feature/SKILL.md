@@ -89,14 +89,24 @@ through callbacks or a passed-down `NavController`.
   every provider from Koin, so a new destination needs no edit in `shared`. Only the start
   destination is set in `MainScreen.kt`.
 - A blank app generated from the blank guide screen release on starts at `GuideDestination`, the
-  developer placeholder. When you build the app, point `startDestination` in
+  developer placeholder. When you build the app, point the start destination in
   `shared/.../MainScreen.kt` at the app's first destination (`shared` already depends on every
-  feature's `contract`), then delete `GuideScreen.kt` and, in `MainScreen.kt`, the
-  `composable<GuideDestination> { ... }` block, the `entries` and `uriHandler` lines and the
-  imports they leave unused. Do not delete the `ReviewRequestEffect()` line in `MainScreen.kt`; it
-  passes in-app review requests on. The About dialog on `GuideScreen` goes with it; `core/about`
-  stays (its licences screen and the legal URLs are still used). The `<Name>Entry` classes may
-  stay or go.
+  feature's `contract`): the `start` value, which with the backend is the argument of
+  `rememberSessionStart(GuideDestination, …)` (the sign-in gate returns there after sign-in).
+  Then delete `GuideScreen.kt` and, in `MainScreen.kt`, the `composable<GuideDestination> { ... }`
+  block, the `entries` and `uriHandler` lines and the imports they leave unused. Do not delete the
+  `ReviewRequestEffect()` line in `MainScreen.kt`; it passes in-app review requests on. The About
+  dialog on `GuideScreen` goes with it; `core/about` stays (its licences screen and the legal URLs
+  are still used). The `<Name>Entry` classes may stay or go.
+- Before deleting `GuideScreen.kt`, keep what the stores require, which it used to reach:
+  - With the backend (`feature/account` exists): a way from the app's own screens (a settings or
+    profile entry) to `AccountSettingsDestination`. It holds account deletion and the privacy and
+    terms links; App Store and Google Play reject an app with accounts but no in-app deletion.
+  - With insights (`core/insights` exists): keep `InsightsConsentDialog` in `MainScreen.kt` and
+    put `InsightsConsentSettings` (the analytics and crash report switches) in the app's own
+    settings screen; GuideScreen's About dialog held them.
+  - Fill `PRIVACY_POLICY_URL` and `TERMS_URL` in `core/about/.../LegalUrls.kt`; while they are
+    empty the links stay hidden.
 - The ViewModel navigates with the injected `NavigationManager`:
   `NavigationCommand.NavigateTo(XDestination(id))`, `NavigateUp`, `PopBackStackTo(...)`.
 - The ViewModel reads its arguments from `SavedStateHandle` by name:
