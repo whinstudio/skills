@@ -70,6 +70,64 @@ expect 2 "hideKeyboard is blocked" 'appId: a
 - inputText: "milk"
 - hideKeyboard
 '
+expect 2 "second field tapped inside a runFlow is blocked" 'appId: a
+---
+- runFlow:
+    when:
+      visible:
+        id: "join_club_action"
+    commands:
+      - tapOn:
+          id: "book_title_input"
+      - inputText: "The Covenant of Water"
+      - tapOn:
+          id: "book_author_input"
+      - inputText: "Abraham Verghese"
+      - tapOn:
+          id: "set_book_title"
+'
+expect 2 "tap inside a repeat after input is blocked" 'appId: a
+---
+- inputText: "milk"
+- repeat:
+    times: 2
+    commands:
+      - tapOn:
+          id: "progress_plus"
+'
+expect 0 "title tap inside a runFlow after input is allowed" 'appId: a
+---
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "create_name_input"
+      - inputText: "Riverside Readers"
+      - tapOn:
+          id: "create_title"
+      - tapOn:
+          id: "create_next"
+'
+expect 0 "text taps on an untagged sign-in screen are left alone" 'appId: a
+---
+- runFlow:
+    when:
+      visible: "Email"
+    commands:
+      - tapOn: "Email"
+      - inputText: "a@example.invalid"
+      - tapOn: "Password"
+      - inputText: "secret"
+      - tapOn:
+          text: "Sign in"
+          index: 0
+      - tapOn:
+          text: "Sign in"
+          index: 1
+- tapOn:
+    id: "insights_consent_deny"
+'
 expect 0 "flow without input is allowed" 'appId: a
 ---
 - launchApp:

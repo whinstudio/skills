@@ -100,8 +100,9 @@ actual fun Modifier.testTagsAsResourceId(): Modifier = this
   content or the error state arrives.
 - After `inputText`, close the keyboard by tapping the screen's `TITLE` tag before the next tap,
   also before moving to a second field or tapping a search field's clear button (clearing keeps the
-  focus, so the keyboard stays open over the controls below). Never `hideKeyboard` (see above). A
-  Compass project checks this when the flow is saved (`.claude/hooks/walkthrough-guard.py`).
+  focus, so the keyboard stays open over the controls below). Never `hideKeyboard` (see above). The
+  same holds inside `runFlow`/`repeat` `commands:`. A Compass project checks this when the flow is
+  saved (`.claude/hooks/walkthrough-guard.py`).
 - A row below the fold does not exist on screen yet: `scrollUntilVisible` first.
 - Selectors: `id:` always. Text only for a system dialog that cannot carry a tag. Coordinates
   (`point:`) never without a comment saying why.
