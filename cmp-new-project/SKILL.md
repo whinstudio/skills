@@ -187,16 +187,16 @@ it uses Google's test ad unit IDs and asks for UMP/ATT consent on the first visi
 `feature/notes`, say Notes is a demo: replace it or remove it. If it has `core/insights`, relay the
 generator's warning: Crashlytics and Analytics stay off (every call a no-op) until the user adds
 their own Firebase config files (`androidApp/google-services.json`,
-`iosApp/iosApp/GoogleService-Info.plist`; never commit them; README → *Insights*). If it has `server/` (backend on), say
-what to do next: add the user's own Firebase config files (`androidApp/google-services.json`,
+`iosApp/iosApp/GoogleService-Info.plist`; never commit them; README → *Insights*). If it has `server/` (backend on),
+say what to do next: add the user's own Firebase config files (`androidApp/google-services.json`,
 `iosApp/iosApp/GoogleService-Info.plist`; never commit them), put the same Firebase project's id in
 `.local-server/config.properties` (`firebaseProjectId=<id>`), then start the local server from the
 project root with `./gradlew :server:runLocal` (an embedded PostgreSQL kept in `.local-server/`;
 `./gradlew :server:resetLocal` wipes it); for an Android debug run (emulator or phone over USB), run
-`adb reverse tcp:18001 tcp:18001` again after each emulator start, USB reconnection or adb restart (the debug app reaches the server at
-`localhost:18001`; the iOS simulator needs nothing). `server/README.md` and `server/SECURITY-CHECKLIST.md`
-describe the server. Invite links open as `<scheme>://invite/<token>`. The app's own data is added
-with the `cmp-backend` skill.
+`adb reverse tcp:18001 tcp:18001` again after each emulator start, USB reconnection or adb restart (the debug app
+reaches the server at `localhost:18001`; the iOS simulator needs nothing). `server/README.md` and
+`server/SECURITY-CHECKLIST.md` describe the server. Invite links open as `<scheme>://invite/<token>`.
+The app's own data is added with the `cmp-backend` skill.
 Add one line for deep links: "deep link: `<scheme>://`" (scheme = project name in lower case;
 showcase opens `<scheme>://user/{username}` and `<scheme>://settings`, blank opens `<scheme>://` and
 `<scheme>://<module>` for each custom module).
