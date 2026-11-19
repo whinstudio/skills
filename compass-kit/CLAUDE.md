@@ -51,6 +51,8 @@ conversation: pass what they need as the argument (the gates, the class to test,
 - Any Kotlin change: `cmp-code-rules`
 - New screen, feature module, repository or data source: `cmp-feature`
 - UI from files under `design/` or a mockup: `cmp-design-to-code`
+- Colours, type, spacing, motion or interface copy that no design decides, or a review of how the app looks:
+  `cmp-design-rules`
 - Maestro flow or testTags: `cmp-maestro`
 - Writing or fixing unit tests: `cmp-testing`; only running them: `cmp-gates tests`
 - detekt findings: `cmp-detekt` (only when detekt is set up)

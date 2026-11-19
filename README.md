@@ -53,8 +53,8 @@ them in step.
 
 [`compass-kit`](./compass-kit) is not a skill but a kit that Compass installs into every project
 it generates. Its `kit.json` lists the skills it ships — `cmp-code-rules`, `cmp-feature`,
-`cmp-design-to-code`, `cmp-maestro`, `cmp-testing`, `cmp-verify`, `cmp-gates`, `cmp-commit`, for
-projects with detekt `cmp-detekt` and, for projects with a backend (`server/`, generated from the cmpose backend template), `cmp-backend` — together with the finish gates those skills run.
+`cmp-design-to-code`, `cmp-design-rules`, `cmp-maestro`, `cmp-testing`, `cmp-verify`, `cmp-gates`,
+`cmp-commit`, for projects with detekt `cmp-detekt` and, for projects with a backend (`server/`, generated from the cmpose backend template), `cmp-backend` — together with the finish gates those skills run.
 See [compass-kit](#compass-kit) below for its contents.
 
 [`unity-kit`](./unity-kit) is the same idea for Unity games: the rules for the code step, which
