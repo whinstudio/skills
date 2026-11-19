@@ -4,6 +4,9 @@
 PostToolUse hook for .maestro/*.yaml. The open keyboard covers the lower part of the screen, so a tap
 on a control after inputText can miss and stall the walkthrough video (cmp-maestro: tap the screen's
 TITLE tag to close it; never hideKeyboard). Exit 2 + stderr sends the reason back to the model.
+Steps nested in runFlow/repeat/retry `commands:` are checked too, in the order they are written.
+Only `id:` taps are reported: a text tap is for a screen without tags (a system dialog, the
+template's sign-in screen), which has no TITLE tag to tap, so it only ends the typing.
 Anything unexpected (bad input, unreadable file) exits 0: this guard must never block work.
 """
 from __future__ import annotations
@@ -12,8 +15,8 @@ import json
 import re
 import sys
 
-STEP = re.compile(r"^- ")
-COMMAND = re.compile(r"^- ([A-Za-z]+)")
+STEP = re.compile(r"^\s*- ")
+COMMAND = re.compile(r"^\s*- ([A-Za-z]+)")
 ID = re.compile(r"""\bid:\s*["']?([A-Za-z0-9_.\-]+)""")
 
 ADVICE = (
@@ -25,7 +28,7 @@ ADVICE = (
 
 
 def steps(text: str) -> list[tuple[int, str, str]]:
-    """Top-level steps as (line number, command, step text); comments and nested lines join their step."""
+    """Steps at any depth as (line number, command, step text); comments and indented lines join their step."""
     result: list[tuple[int, str, list[str]]] = []
     for number, line in enumerate(text.splitlines(), start=1):
         if STEP.match(line):
@@ -46,8 +49,8 @@ def check(text: str) -> str | None:
             typed_at = typed_at or number
         elif command == "tapOn" and typed_at is not None:
             match = ID.search(body)
-            if not (match and match.group(1).endswith("_title")):
-                target = match.group(1) if match else body.split(":", 1)[-1].strip()
+            if match and not match.group(1).endswith("_title"):
+                target = match.group(1)
                 problems.append(
                     f"line {number}: taps {target} while the keyboard from line {typed_at} is still open"
                 )
