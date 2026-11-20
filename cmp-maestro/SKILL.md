@@ -64,7 +64,14 @@ The one flow must run on both platforms:
 - The flow uses the same strings verbatim.
 - Every screen root has a `ROOT` tag; the flow uses it to know a transition finished.
 - A screen with a text field also has a `TITLE` tag on its non-interactive title text
-  (`TITLE = "recipe_detail_title"`); the flow taps it to close the keyboard.
+  (`TITLE = "recipe_detail_title"`); the flow taps it to close the keyboard. That tap closes it
+  because the root `Scaffold` in `shared/.../MainScreen.kt` uses `Modifier.clearFocusOnTap()` from
+  `core/presentation` (since `template-2026.11.20`, cmpose 3.0.6): a tap nothing else handles
+  clears focus. Keep it there next to `testTagsAsResourceId()`. A project generated from an older
+  template has no such modifier, and on iOS the title tap leaves the keyboard open: in `MainScreen`
+  take `val focusManager = LocalFocusManager.current` and chain
+  `.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }` on that root
+  `Scaffold`'s modifier.
 - Put the tag on the node that is clicked or typed into (the `Button`, the `clickable` row, the
   `TextField`), not on a wrapper around it.
 - List rows may share one tag; the flow picks a row with `index:`.
@@ -85,7 +92,8 @@ The one flow must run on both platforms:
   timeout.
 - Screens that load from the network get a 15-second timeout, and the flow must go on whether the
   content or the error state arrives.
-- After `inputText`, close the keyboard by tapping the screen's `TITLE` tag before the next tap,
+- After `inputText`, close the keyboard by tapping the screen's `TITLE` tag (it works through
+  `clearFocusOnTap()` at the root, section 2) before the next tap,
   also before moving to a second field or tapping a search field's clear button (clearing keeps the
   focus, so the keyboard stays open over the controls below). Never `hideKeyboard` (see above). The
   same holds inside `runFlow`/`repeat` `commands:`. A Compass project checks this when the flow is
@@ -152,6 +160,8 @@ appId: com.example.cookbook
 
 - No `id:` matches anywhere: `testTagsAsResourceId` is missing at the root, or the element is in a
   dialog window without it.
+- After the `TITLE` tap the iOS keyboard is still open: `clearFocusOnTap()` is missing at the root
+  (section 2), or the title is clickable and handles the tap itself.
 - The tap lands but nothing happens: the tag sits on a wrapper or a text node, not on the
   clickable node.
 - `runScript` runs JavaScript, not shell commands.
