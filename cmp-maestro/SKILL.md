@@ -51,7 +51,10 @@ The one flow must run on both platforms:
   `semantics { testTagsAsResourceId = true }`, iOS: `this`), make `shared` depend on
   `projects.core.presentation` if it does not, and apply it to that root `Scaffold`.
 - Dialogs, bottom sheets and dropdown menus open in their own window, which does not inherit the
-  flag. Apply the same modifier to the content root of each one the flow touches.
+  flag. Apply the same modifier to each one that has test tags: `DropdownMenu(modifier =
+  Modifier.testTagsAsResourceId(), ...)`, `AlertDialog(modifier = ...)`, or the content root of a
+  `Dialog`/`ModalBottomSheet`. A Compass project checks this when a Kotlin file is saved
+  (`.claude/hooks/popup-tags-guard.py`).
 
 ## 2. Tag catalogue
 

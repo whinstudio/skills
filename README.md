@@ -122,7 +122,9 @@ it — some execute shell commands and call external APIs.
 `compass-kit/` is what Compass installs into every project it generates: the skills listed in
 `kit.json`, `CLAUDE.md` (Compass fills in the `<!-- compass:gates -->` line), a project
 `settings.json` that registers `hooks/secrets-guard.py` (blocks secrets) and
-`hooks/walkthrough-guard.py` (a saved Maestro flow must close the keyboard after typing) and turns
+`hooks/walkthrough-guard.py` (a saved Maestro flow must close the keyboard after typing) and
+`hooks/popup-tags-guard.py` (a dropdown menu, dialog or bottom sheet with test tags must turn on
+`testTagsAsResourceId`, since it opens in its own window) and turns
 commit/PR attribution off, and
 the detekt configuration.
 The gates in `kit.json` are both what the coding agent is told to run and what Compass runs
