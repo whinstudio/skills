@@ -43,29 +43,13 @@ The one flow must run on both platforms:
 
 - Maestro's `id:` matches the Android resource id. A Compose `testTag` becomes that id only below a
   node with `testTagsAsResourceId = true`. Without it no `id:` selector matches anything.
-- The property is Android-only, so turn it on once through an `expect`/`actual` modifier in
-  `core/presentation`, which compiles for both platforms. This setup ran in a walkthrough Compass
-  recorded:
-
-```kotlin
-// core/presentation/src/commonMain/kotlin/<pkg>/core/presentation/TestTags.kt
-expect fun Modifier.testTagsAsResourceId(): Modifier
-
-// core/presentation/src/androidMain/kotlin/<pkg>/core/presentation/TestTags.android.kt
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTagsAsResourceId
-
-actual fun Modifier.testTagsAsResourceId(): Modifier = semantics { testTagsAsResourceId = true }
-
-// core/presentation/src/iosMain/kotlin/<pkg>/core/presentation/TestTags.ios.kt
-actual fun Modifier.testTagsAsResourceId(): Modifier = this
-```
-
-- Apply it to the outermost layout in `shared/.../MainScreen.kt`:
-  `Scaffold(modifier = Modifier.fillMaxSize().testTagsAsResourceId(), ...)`. The generator does
-  not make `shared` depend on `core/presentation`; add
-  `implementation(projects.core.presentation)` to the `commonMain` dependencies in
-  `shared/build.gradle.kts` if it is missing.
+- The template turns it on for you (since `template-2026.11.19.2`, cmpose 3.0.5): the root `Scaffold` in
+  `shared/.../MainScreen.kt` uses `Modifier.testTagsAsResourceId()` from `core/presentation`
+  (`com.kturker.multiplatform.core.presentation`, renamed with the project's package; a no-op on iOS).
+  Keep it there when you edit `MainScreen.kt`. A project generated from an older template has no such
+  modifier: add the same `expect`/`actual` pair in `core/presentation` (Android:
+  `semantics { testTagsAsResourceId = true }`, iOS: `this`), make `shared` depend on
+  `projects.core.presentation` if it does not, and apply it to that root `Scaffold`.
 - Dialogs, bottom sheets and dropdown menus open in their own window, which does not inherit the
   flag. Apply the same modifier to the content root of each one the flow touches.
 
